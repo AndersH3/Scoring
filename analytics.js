@@ -1,8 +1,8 @@
 /*
  * Privacy-conscious analytics for scoring.hellstrom.pw.
  *
- * GoatCounter site code: andersh3
- * Dashboard: https://andersh3.goatcounter.com/
+ * GoatCounter site code: miym6tbsng
+ * Dashboard: https://miym6tbsng.goatcounter.com/
  *
  * This file records ordinary page views/referrers through GoatCounter and
  * additionally records repository-file downloads and outbound-link clicks as
@@ -11,7 +11,7 @@
 (() => {
   "use strict";
 
-  const GOATCOUNTER_CODE = "andersh3";
+  const GOATCOUNTER_CODE = "miym6tbsng";
   const SHOW_VISITOR_COUNT = false;
 
   const endpoint = `https://${GOATCOUNTER_CODE}.goatcounter.com/count`;
