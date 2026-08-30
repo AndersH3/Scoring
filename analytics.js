@@ -1,21 +1,18 @@
 /*
  * Privacy-conscious analytics for scoring.hellstrom.pw.
  *
- * Setup:
- *   1. Create a GoatCounter site at https://www.goatcounter.com/
- *   2. Replace the empty GOATCOUNTER_CODE below with your site code.
- *      Example: const GOATCOUNTER_CODE = "scoring";
+ * GoatCounter site code: andersh3
+ * Dashboard: https://andersh3.goatcounter.com/
  *
- * Until a code is configured this file exits without making any network
- * requests, so it is safe to deploy before the analytics account exists.
+ * This file records ordinary page views/referrers through GoatCounter and
+ * additionally records repository-file downloads and outbound-link clicks as
+ * events. No GoatCounter account secret or API token is stored here.
  */
 (() => {
   "use strict";
 
-  const GOATCOUNTER_CODE = "";
+  const GOATCOUNTER_CODE = "andersh3";
   const SHOW_VISITOR_COUNT = true;
-
-  if (!GOATCOUNTER_CODE) return;
 
   const endpoint = `https://${GOATCOUNTER_CODE}.goatcounter.com/count`;
 
