@@ -12,7 +12,7 @@
   "use strict";
 
   const GOATCOUNTER_CODE = "andersh3";
-  const SHOW_VISITOR_COUNT = true;
+  const SHOW_VISITOR_COUNT = false;
 
   const endpoint = `https://${GOATCOUNTER_CODE}.goatcounter.com/count`;
 
