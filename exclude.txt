@@ -3,3 +3,6 @@ CNAME
 LICENSE
 analytics.js
 index.html
+item_analysis.r.md
+pisa_booklet_stability_analysis.r.md
+r-to-odt.sh
