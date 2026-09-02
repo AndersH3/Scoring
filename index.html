@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Scoring — Code, data, results and references</title>
-  <meta name="description" content="Code, data, figures, results and references from the AndersH3 Scoring repository.">
+  <title>Scoring — Subprojects, code, data and results</title>
+  <meta name="description" content="Browse Scoring subprojects, with code, data, reports and supporting references grouped by repository folder. Files are listed largest first.">
   <meta name="robots" content="index,follow">
   <link rel="canonical" href="https://scoring.hellstrom.pw/">
-  <meta property="og:title" content="Scoring — Code, data, results and references">
-  <meta property="og:description" content="Browse Scoring repository files ordered from largest to smallest, plus supporting references.">
+  <meta property="og:title" content="Scoring — Subprojects, code, data and results">
+  <meta property="og:description" content="Explore each Scoring subproject and its files, reports and references.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://scoring.hellstrom.pw/">
   <style>
@@ -111,7 +111,7 @@
 
     .stats {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 180px));
+      grid-template-columns: repeat(3, minmax(0, 180px));
       gap: 12px;
       margin-top: 34px;
     }
@@ -350,7 +350,8 @@
         padding-left: 18px;
       }
 
-      .source { display: none; }
+      .file { grid-template-columns: minmax(0, 1fr); }
+      .source { justify-self: end; }
     }
 
     @media (prefers-color-scheme: dark) {
@@ -372,289 +373,152 @@
         color: #fff;
       }
     }
+  
+    [hidden] { display: none !important; }
+    header { padding-top: 48px; padding-bottom: 24px; }
+    h1 { font-size: clamp(2.4rem, 7vw, 4.4rem); }
+    .project { scroll-margin-top: 16px; }
+    .project .eyebrow { margin-bottom: 6px; }
+    .project h2 { overflow-wrap: anywhere; }
+    .project .panel-head .button { flex-shrink: 0; }
+    .project-navigation { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+    #projects { display: grid; gap: 30px; }
+    .controls { padding: 22px 26px; }
+    .filter-fields { display: flex; flex-wrap: wrap; gap: 16px; align-items: end; }
+    .controls .search { flex: 1 1 250px; width: auto; }
+    .controls select { width: 100%; min-height: 44px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 11px; background: var(--surface-soft); color: var(--text); font: inherit; }
+    .reference-heading { padding: 20px 26px 12px; border-top: 1px solid var(--line); }
+    h3 { margin: 0; font-size: 1.08rem; }
+    .reference span { white-space: normal; overflow-wrap: anywhere; }
+    .source, .search label, .file-copy small { font-size: .875rem; }
+    .type { font-size: .75rem; }
+    .sync-status { margin: 16px 0 0; font-size: .875rem; color: var(--muted); }
+    .skip-link { position: absolute; top: -80px; left: 16px; z-index: 10; }
+    .skip-link:focus { top: 12px; }
+    a:focus-visible, select:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+    @media (max-width: 440px) { .stats { grid-template-columns: 1fr; } .panel-head, .controls { padding: 20px 18px; } }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
   </style>
   <script defer src="./analytics.js"></script>
+  <script defer src="./repository-index.js"></script>
 </head>
 <body>
+  <a class="button skip-link" href="#main">Skip to files</a>
   <header class="wrap">
     <p class="eyebrow">AndersH3 / Scoring</p>
     <h1>Code, data and results.</h1>
-    <p class="lede">
-      A curated index of the files and supporting references in the Scoring
-      repository, including the PISA analyses, generated datasets, figures and report.
-    </p>
-    <div class="actions">
-      <a class="button primary" href="https://github.com/AndersH3/Scoring" target="_blank" rel="noopener noreferrer">View repository</a>
-      <a class="button" href="./report.pdf">Open report</a>
-    </div>
+    <p class="lede">Explore the scoring research by subproject. Each folder brings together its files, results and supporting references.</p>
+    <div class="actions"><a class="button primary" href="https://github.com/AndersH3/Scoring" target="_blank" rel="noopener noreferrer">View repository</a></div>
     <div class="stats" aria-label="Repository summary">
-      <div class="stat"><strong>22</strong><span>listed repository files</span></div>
-      <div class="stat"><strong>8</strong><span>external references</span></div>
+      <div class="stat"><strong id="projects-total">1</strong><span>subprojects</span></div>
+      <div class="stat"><strong id="files-total">22</strong><span>listed files</span></div>
+      <div class="stat"><strong id="references-total">8</strong><span>external references</span></div>
     </div>
+    <nav class="project-navigation" id="project-navigation" aria-label="Subprojects and shared files"><a class="button" href="#project-PISA">PISA</a>
+<a class="button" href="#shared-files">Shared files</a></nav>
+    <p class="sync-status" id="sync-status" role="status">Saved file index · 2 September 2026</p>
   </header>
-
-  <main class="wrap">
-    <section class="panel" aria-labelledby="files-heading">
-      <div class="panel-head">
-        <div>
-          <h2 id="files-heading">Repository files</h2>
-          <p class="section-note"><span id="file-count">22 files</span> listed from the main branch, largest first.</p>
-        </div>
-        <div class="search">
-          <label for="file-search">Filter files</label>
-          <input id="file-search" type="search" placeholder="Try PDF, PISA or CSV" autocomplete="off">
-        </div>
+  <main class="wrap" id="main">
+    <section class="panel controls" aria-labelledby="browse-heading">
+      <h2 id="browse-heading">Browse the collection</h2>
+      <p class="section-note">Files are sorted largest first within each subproject.</p>
+      <div class="filter-fields">
+        <div class="search"><label for="project-select">Subproject</label><select id="project-select" disabled><option value="">All subprojects and shared files</option><option value="project-PISA">PISA</option><option value="shared-files">Shared files</option></select></div>
+        <div class="search"><label for="file-search">Filter files and references</label><input id="file-search" type="search" placeholder="Try PDF, PISA or CSV" autocomplete="off" disabled></div>
       </div>
-      <ul class="file-list" id="file-list">
-<li class="file" data-file="report.pdf pdf full scoring-method report 893947" data-size="893947">
-          <a class="file-main" href="./report.pdf">
-            <span class="type">PDF</span>
-            <span class="file-copy"><strong>report.pdf</strong><small>Full scoring-method report · 873 KiB (893,947 bytes)</small></span>
-          </a>
-          <a class="source" href="https://github.com/AndersH3/Scoring/blob/main/report.pdf" target="_blank" rel="noopener noreferrer">GitHub</a>
-        </li>
-<li class="file" data-file="pisa12_math_person_scores.csv csv pisa 2012 mathematics person scores 286042" data-size="286042">
-          <a class="file-main" href="./pisa12_math_person_scores.csv">
-            <span class="type">CSV</span>
-            <span class="file-copy"><strong>pisa12_math_person_scores.csv</strong><small>PISA 2012 mathematics person scores · 279.34 KiB (286,042 bytes)</small></span>
-          </a>
-          <a class="source" href="https://github.com/AndersH3/Scoring/blob/main/pisa12_math_person_scores.csv" target="_blank" rel="noopener noreferrer">GitHub</a>
-        </li>
-<li class="file" data-file="pisa_repeated_item_pairwise.csv csv pairwise repeated-item analysis 141931" data-size="141931">
-          <a class="file-main" href="./pisa_repeated_item_pairwise.csv">
-            <span class="type">CSV</span>
-            <span class="file-copy"><strong>pisa_repeated_item_pairwise.csv</strong><small>Pairwise repeated-item analysis · 138.6 KiB (141,931 bytes)</small></span>
-          </a>
-          <a class="source" href="https://github.com/AndersH3/Scoring/blob/main/pisa_repeated_item_pairwise.csv" target="_blank" rel="noopener noreferrer">GitHub</a>
-        </li>
-<li class="file" data-file="item_analysis.r.odt odt item-scoring analysis program — opendocument version 76144" data-size="76144">
-          <a class="file-main" href="./item_analysis.r.odt">
-            <span class="type">ODT</span>
-            <span class="file-copy"><strong>item_analysis.r.odt</strong><small>Item-scoring analysis program — OpenDocument version · 74.36 KiB (76,144 bytes)</small></span>
-          </a>
-          <a class="source" href="https://github.com/AndersH3/Scoring/blob/main/item_analysis.r.odt" target="_blank" rel="noopener noreferrer">GitHub</a>
-        </li>
-<li class="file" data-file="pisa_booklet_stability_analysis.r.odt odt pisa booklet stability analysis — opendocument version 55227" data-size="55227">
-          <a class="file-main" href="./pisa_booklet_stability_analysis.r.odt">
-            <span class="type">ODT</span>
-            <span class="file-copy"><strong>pisa_booklet_stability_analysis.r.odt</strong><small>PISA booklet stability analysis — OpenDocument version · 53.93 KiB (55,227 bytes)</small></span>
-          </a>
-          <a class="source" href="https://github.com/AndersH3/Scoring/blob/main/pisa_booklet_stability_analysis.r.odt" target="_blank" rel="noopener noreferrer">GitHub</a>
-        </li>
-<li class="file" data-file="pisa_all_pattern_item_calibrations.csv csv cross-pattern item calibrations 54628" data-size="54628">
-          <a class="file-main" href="./pisa_all_pattern_item_calibrations.csv">
-            <span class="type">CSV</span>
-            <span class="file-copy"><strong>pisa_all_pattern_item_calibrations.csv</strong><small>Cross-pattern item calibrations · 53.35 KiB (54,628 bytes)</small></span>
-          </a>
-          <a class="source" href="https://github.com/AndersH3/Scoring/blob/main/pisa_all_pattern_item_calibrations.csv" target="_blank" rel="noopener noreferrer">GitHub</a>
-        </li>
-<li class="file" data-file="item_analysis.r r item-scoring analysis program 54526" data-size="54526">
-          <a class="file-main" href="./item_analysis.r">
-            <span class="type">R</span>
-            <span class="file-copy"><strong>item_analysis.r</strong><small>Item-scoring analysis program · 53.25 KiB (54,526 bytes)</small></span>
-          </a>
-          <a class="source" href="https://github.com/AndersH3/Scoring/blob/main/item_analysis.r" target="_blank" rel="noopener noreferrer">GitHub</a>
-        </li>
-<li class="file" data-file="pisa_repeated_item_weight_stability.png png repeated-item weight stability figure 41489" data-size="41489">
-          <a class="file-main" href="./pisa_repeated_item_weight_stability.png">
-            <span class="type">PNG</span>
-            <span class="file-copy"><strong>pisa_repeated_item_weight_stability.png</strong><small>Repeated-item weight stability figure · 40.52 KiB (41,489 bytes)</small></span>
-          </a>
-          <a class="source" href="https://github.com/AndersH3/Scoring/blob/main/pisa_repeated_item_weight_stability.png" target="_blank" rel="noopener noreferrer">GitHub</a>
-        </li>
-<li class="file" data-file="person_scores_100.csv csv 100-point person scores 40760" data-size="40760">
-          <a class="file-main" href="./person_scores_100.csv">
-            <span class="type">CSV</span>
-            <span class="file-copy"><strong>person_scores_100.csv</strong><small>100-point person scores · 39.8 KiB (40,760 bytes)</small></span>
-          </a>
-          <a class="source" href="https://github.com/AndersH3/Scoring/blob/main/person_scores_100.csv" target="_blank" rel="noopener noreferrer">GitHub</a>
-        </li>
-<li class="file" data-file="item_analysis.r.docx docx item-scoring analysis program — word version 36638" data-size="36638">
-          <a class="file-main" href="./item_analysis.r.docx">
-            <span class="type">DOCX</span>
-            <span class="file-copy"><strong>item_analysis.r.docx</strong><small>Item-scoring analysis program — Word version · 35.78 KiB (36,638 bytes)</small></span>
-          </a>
-          <a class="source" href="https://github.com/AndersH3/Scoring/blob/main/item_analysis.r.docx" target="_blank" rel="noopener noreferrer">GitHub</a>
-        </li>
-<li class="file" data-file="pisa12_math_largest_pattern.csv csv largest pisa mathematics response pattern 32056" data-size="32056">
-          <a class="file-main" href="./pisa12_math_largest_pattern.csv">
-            <span class="type">CSV</span>
-            <span class="file-copy"><strong>pisa12_math_largest_pattern.csv</strong><small>Largest PISA mathematics response pattern · 31.3 KiB (32,056 bytes)</small></span>
-          </a>
-          <a class="source" href="https://github.com/AndersH3/Scoring/blob/main/pisa12_math_largest_pattern.csv" target="_blank" rel="noopener noreferrer">GitHub</a>
-        </li>
-<li class="file" data-file="pisa_repeated_item_stability.csv csv repeated-item stability results 31968" data-size="31968">
-          <a class="file-main" href="./pisa_repeated_item_stability.csv">
-            <span class="type">CSV</span>
-            <span class="file-copy"><strong>pisa_repeated_item_stability.csv</strong><small>Repeated-item stability results · 31.22 KiB (31,968 bytes)</small></span>
-          </a>
-          <a class="source" href="https://github.com/AndersH3/Scoring/blob/main/pisa_repeated_item_stability.csv" target="_blank" rel="noopener noreferrer">GitHub</a>
-        </li>
-<li class="file" data-file="pisa12_math_item_weights.csv csv pisa 2012 mathematics item weights 24483" data-size="24483">
-          <a class="file-main" href="./pisa12_math_item_weights.csv">
-            <span class="type">CSV</span>
-            <span class="file-copy"><strong>pisa12_math_item_weights.csv</strong><small>PISA 2012 mathematics item weights · 23.91 KiB (24,483 bytes)</small></span>
-          </a>
-          <a class="source" href="https://github.com/AndersH3/Scoring/blob/main/pisa12_math_item_weights.csv" target="_blank" rel="noopener noreferrer">GitHub</a>
-        </li>
-<li class="file" data-file="pisa_pm995q02_across_patterns.png png pm995q02 cross-pattern figure 17856" data-size="17856">
-          <a class="file-main" href="./pisa_pm995q02_across_patterns.png">
-            <span class="type">PNG</span>
-            <span class="file-copy"><strong>pisa_pm995q02_across_patterns.png</strong><small>PM995Q02 cross-pattern figure · 17.44 KiB (17,856 bytes)</small></span>
-          </a>
-          <a class="source" href="https://github.com/AndersH3/Scoring/blob/main/pisa_pm995q02_across_patterns.png" target="_blank" rel="noopener noreferrer">GitHub</a>
-        </li>
-<li class="file" data-file="pisa_booklet_stability_analysis.r.docx docx pisa booklet stability analysis — word version 15637" data-size="15637">
-          <a class="file-main" href="./pisa_booklet_stability_analysis.r.docx">
-            <span class="type">DOCX</span>
-            <span class="file-copy"><strong>pisa_booklet_stability_analysis.r.docx</strong><small>PISA booklet stability analysis — Word version · 15.27 KiB (15,637 bytes)</small></span>
-          </a>
-          <a class="source" href="https://github.com/AndersH3/Scoring/blob/main/pisa_booklet_stability_analysis.r.docx" target="_blank" rel="noopener noreferrer">GitHub</a>
-        </li>
-<li class="file" data-file="item_weights_100.csv csv 100-point item weights 10408" data-size="10408">
-          <a class="file-main" href="./item_weights_100.csv">
-            <span class="type">CSV</span>
-            <span class="file-copy"><strong>item_weights_100.csv</strong><small>100-point item weights · 10.16 KiB (10,408 bytes)</small></span>
-          </a>
-          <a class="source" href="https://github.com/AndersH3/Scoring/blob/main/item_weights_100.csv" target="_blank" rel="noopener noreferrer">GitHub</a>
-        </li>
-<li class="file" data-file="pisa_booklet_stability_analysis.r r pisa booklet stability analysis 9179" data-size="9179">
-          <a class="file-main" href="./pisa_booklet_stability_analysis.r">
-            <span class="type">R</span>
-            <span class="file-copy"><strong>pisa_booklet_stability_analysis.r</strong><small>PISA booklet stability analysis · 8.96 KiB (9,179 bytes)</small></span>
-          </a>
-          <a class="source" href="https://github.com/AndersH3/Scoring/blob/main/pisa_booklet_stability_analysis.r" target="_blank" rel="noopener noreferrer">GitHub</a>
-        </li>
-<li class="file" data-file="person_scores.csv csv person-level scoring results 7578" data-size="7578">
-          <a class="file-main" href="./person_scores.csv">
-            <span class="type">CSV</span>
-            <span class="file-copy"><strong>person_scores.csv</strong><small>Person-level scoring results · 7.4 KiB (7,578 bytes)</small></span>
-          </a>
-          <a class="source" href="https://github.com/AndersH3/Scoring/blob/main/person_scores.csv" target="_blank" rel="noopener noreferrer">GitHub</a>
-        </li>
-<li class="file" data-file="item_weights.csv csv item-weight results 5929" data-size="5929">
-          <a class="file-main" href="./item_weights.csv">
-            <span class="type">CSV</span>
-            <span class="file-copy"><strong>item_weights.csv</strong><small>Item-weight results · 5.79 KiB (5,929 bytes)</small></span>
-          </a>
-          <a class="source" href="https://github.com/AndersH3/Scoring/blob/main/item_weights.csv" target="_blank" rel="noopener noreferrer">GitHub</a>
-        </li>
-<li class="file" data-file="pisa_pm995q02_across_patterns.csv csv pm995q02 results across patterns 939" data-size="939">
-          <a class="file-main" href="./pisa_pm995q02_across_patterns.csv">
-            <span class="type">CSV</span>
-            <span class="file-copy"><strong>pisa_pm995q02_across_patterns.csv</strong><small>PM995Q02 results across patterns · 939 bytes</small></span>
-          </a>
-          <a class="source" href="https://github.com/AndersH3/Scoring/blob/main/pisa_pm995q02_across_patterns.csv" target="_blank" rel="noopener noreferrer">GitHub</a>
-        </li>
-<li class="file" data-file="pisa12_response_pattern_summary.csv csv pisa response-pattern summary 333" data-size="333">
-          <a class="file-main" href="./pisa12_response_pattern_summary.csv">
-            <span class="type">CSV</span>
-            <span class="file-copy"><strong>pisa12_response_pattern_summary.csv</strong><small>PISA response-pattern summary · 333 bytes</small></span>
-          </a>
-          <a class="source" href="https://github.com/AndersH3/Scoring/blob/main/pisa12_response_pattern_summary.csv" target="_blank" rel="noopener noreferrer">GitHub</a>
-        </li>
-<li class="file" data-file="pisa_major_pattern_summary.csv csv major pisa response-pattern summary 292" data-size="292">
-          <a class="file-main" href="./pisa_major_pattern_summary.csv">
-            <span class="type">CSV</span>
-            <span class="file-copy"><strong>pisa_major_pattern_summary.csv</strong><small>Major PISA response-pattern summary · 292 bytes</small></span>
-          </a>
-          <a class="source" href="https://github.com/AndersH3/Scoring/blob/main/pisa_major_pattern_summary.csv" target="_blank" rel="noopener noreferrer">GitHub</a>
-        </li>
-      </ul>
-      <p class="empty" id="empty-state" hidden>No files match that search.</p>
+      <p class="section-note" id="filter-count" role="status">22 files · 8 references</p>
+      <noscript><p class="section-note">All saved files and references are listed below. Enable JavaScript for filtering and automatic updates.</p></noscript>
     </section>
-
-    <section class="panel" aria-labelledby="references-heading">
-      <div class="panel-head">
-        <div>
-          <h2 id="references-heading">Supporting references</h2>
-          <p class="section-note">All external links listed in <a href="./links.txt">links.txt</a>.</p>
-        </div>
-      </div>
-      <ul class="reference-list">
-        <li>
-          <a class="reference" href="https://released-math-exams.weebly.com/uploads/2/7/0/8/27087321/pisa_2012.pdf" target="_blank" rel="noopener noreferrer">
-            <span class="domain">Released Math Exams</span>
-            <strong>PISA 2012 released mathematics questions (PDF)</strong>
-            <span>released-math-exams.weebly.com/uploads/…/pisa_2012.pdf</span>
-          </a>
-        </li>
-        <li>
-          <a class="reference" href="https://en.wikipedia.org/wiki/Programme_for_International_Student_Assessment" target="_blank" rel="noopener noreferrer">
-            <span class="domain">Wikipedia</span>
-            <strong>Programme for International Student Assessment</strong>
-            <span>en.wikipedia.org/wiki/Programme_for_International_Student_Assessment</span>
-          </a>
-        </li>
-        <li>
-          <a class="reference" href="https://www.oecd.org/en/about/programmes/pisa/pisa-test.html" target="_blank" rel="noopener noreferrer">
-            <span class="domain">OECD</span>
-            <strong>The PISA test</strong>
-            <span>oecd.org/en/about/programmes/pisa/pisa-test.html</span>
-          </a>
-        </li>
-        <li>
-          <a class="reference" href="https://www.oecd.org/en/data/datasets/pisa-2012-database.html" target="_blank" rel="noopener noreferrer">
-            <span class="domain">OECD</span>
-            <strong>PISA 2012 database</strong>
-            <span>oecd.org/en/data/datasets/pisa-2012-database.html</span>
-          </a>
-        </li>
-        <li>
-          <a class="reference" href="https://www.researchgate.net/publication/352902730_Different_complex_word_problems_require_different_combinations_of_cognitive_skills" target="_blank" rel="noopener noreferrer">
-            <span class="domain">ResearchGate</span>
-            <strong>Different complex word problems require different combinations of cognitive skills</strong>
-            <span>researchgate.net/publication/352902730</span>
-          </a>
-        </li>
-        <li>
-          <a class="reference" href="https://www.oecd.org/en/about/programmes/pisa.html" target="_blank" rel="noopener noreferrer">
-            <span class="domain">OECD</span>
-            <strong>Programme for International Student Assessment (PISA)</strong>
-            <span>oecd.org/en/about/programmes/pisa.html</span>
-          </a>
-        </li>
-        <li>
-          <a class="reference" href="https://www.oecd.org/en/publications/pisa-2012-results-what-students-know-and-can-do-volume-i_9789264201118-en.html" target="_blank" rel="noopener noreferrer">
-            <span class="domain">OECD</span>
-            <strong>PISA 2012 Results: What Students Know and Can Do — Volume I</strong>
-            <span>oecd.org/en/publications/pisa-2012-results</span>
-          </a>
-        </li>
-        <li>
-          <a class="reference" href="https://en.wikipedia.org/wiki/Somers" target="_blank" rel="noopener noreferrer">
-            <span class="domain">Wikipedia</span>
-            <strong>Somers</strong>
-            <span>en.wikipedia.org/wiki/Somers</span>
-          </a>
-        </li>
-      </ul>
+    <div id="projects"><section class="panel project" id="project-PISA" data-project="PISA" aria-labelledby="project-PISA-heading">
+      <div class="panel-head"><div><p class="eyebrow">Subproject</p>
+      <h2 id="project-PISA-heading">PISA</h2>
+      <p class="section-note">21 files · largest first · 8 references</p></div>
+      <a class="button" href="https://github.com/AndersH3/Scoring/tree/main/PISA" target="_blank" rel="noopener noreferrer">Folder on GitHub</a></div>
+      <ul class="file-list"><li class="file" data-file="pisa/report.pdf pdf full scoring-method report" data-path="PISA/report.pdf" data-size="893947">
+        <a class="file-main" href="./PISA/report.pdf"><span class="type">PDF</span><span class="file-copy"><strong>report.pdf</strong><small>Full scoring-method report · 873 KiB (893,947 bytes)</small></span></a>
+        <a class="source" href="https://github.com/AndersH3/Scoring/blob/main/PISA/report.pdf" target="_blank" rel="noopener noreferrer" aria-label="View PISA/report.pdf on GitHub">GitHub</a></li>
+<li class="file" data-file="pisa/pisa12_math_person_scores.csv csv pisa 2012 mathematics person scores" data-path="PISA/pisa12_math_person_scores.csv" data-size="286042">
+        <a class="file-main" href="./PISA/pisa12_math_person_scores.csv"><span class="type">CSV</span><span class="file-copy"><strong>pisa12_math_person_scores.csv</strong><small>PISA 2012 mathematics person scores · 279.34 KiB (286,042 bytes)</small></span></a>
+        <a class="source" href="https://github.com/AndersH3/Scoring/blob/main/PISA/pisa12_math_person_scores.csv" target="_blank" rel="noopener noreferrer" aria-label="View PISA/pisa12_math_person_scores.csv on GitHub">GitHub</a></li>
+<li class="file" data-file="pisa/pisa_repeated_item_pairwise.csv csv pairwise repeated-item analysis" data-path="PISA/pisa_repeated_item_pairwise.csv" data-size="141931">
+        <a class="file-main" href="./PISA/pisa_repeated_item_pairwise.csv"><span class="type">CSV</span><span class="file-copy"><strong>pisa_repeated_item_pairwise.csv</strong><small>Pairwise repeated-item analysis · 138.6 KiB (141,931 bytes)</small></span></a>
+        <a class="source" href="https://github.com/AndersH3/Scoring/blob/main/PISA/pisa_repeated_item_pairwise.csv" target="_blank" rel="noopener noreferrer" aria-label="View PISA/pisa_repeated_item_pairwise.csv on GitHub">GitHub</a></li>
+<li class="file" data-file="pisa/item_analysis.r.odt odt item-scoring analysis program — opendocument version" data-path="PISA/item_analysis.r.odt" data-size="76144">
+        <a class="file-main" href="./PISA/item_analysis.r.odt"><span class="type">ODT</span><span class="file-copy"><strong>item_analysis.r.odt</strong><small>Item-scoring analysis program — OpenDocument version · 74.36 KiB (76,144 bytes)</small></span></a>
+        <a class="source" href="https://github.com/AndersH3/Scoring/blob/main/PISA/item_analysis.r.odt" target="_blank" rel="noopener noreferrer" aria-label="View PISA/item_analysis.r.odt on GitHub">GitHub</a></li>
+<li class="file" data-file="pisa/pisa_booklet_stability_analysis.r.odt odt pisa booklet stability analysis — opendocument version" data-path="PISA/pisa_booklet_stability_analysis.r.odt" data-size="55227">
+        <a class="file-main" href="./PISA/pisa_booklet_stability_analysis.r.odt"><span class="type">ODT</span><span class="file-copy"><strong>pisa_booklet_stability_analysis.r.odt</strong><small>PISA booklet stability analysis — OpenDocument version · 53.93 KiB (55,227 bytes)</small></span></a>
+        <a class="source" href="https://github.com/AndersH3/Scoring/blob/main/PISA/pisa_booklet_stability_analysis.r.odt" target="_blank" rel="noopener noreferrer" aria-label="View PISA/pisa_booklet_stability_analysis.r.odt on GitHub">GitHub</a></li>
+<li class="file" data-file="pisa/pisa_all_pattern_item_calibrations.csv csv cross-pattern item calibrations" data-path="PISA/pisa_all_pattern_item_calibrations.csv" data-size="54628">
+        <a class="file-main" href="./PISA/pisa_all_pattern_item_calibrations.csv"><span class="type">CSV</span><span class="file-copy"><strong>pisa_all_pattern_item_calibrations.csv</strong><small>Cross-pattern item calibrations · 53.35 KiB (54,628 bytes)</small></span></a>
+        <a class="source" href="https://github.com/AndersH3/Scoring/blob/main/PISA/pisa_all_pattern_item_calibrations.csv" target="_blank" rel="noopener noreferrer" aria-label="View PISA/pisa_all_pattern_item_calibrations.csv on GitHub">GitHub</a></li>
+<li class="file" data-file="pisa/pisa_repeated_item_weight_stability.png png repeated-item weight stability figure" data-path="PISA/pisa_repeated_item_weight_stability.png" data-size="41489">
+        <a class="file-main" href="./PISA/pisa_repeated_item_weight_stability.png"><span class="type">PNG</span><span class="file-copy"><strong>pisa_repeated_item_weight_stability.png</strong><small>Repeated-item weight stability figure · 40.52 KiB (41,489 bytes)</small></span></a>
+        <a class="source" href="https://github.com/AndersH3/Scoring/blob/main/PISA/pisa_repeated_item_weight_stability.png" target="_blank" rel="noopener noreferrer" aria-label="View PISA/pisa_repeated_item_weight_stability.png on GitHub">GitHub</a></li>
+<li class="file" data-file="pisa/person_scores_100.csv csv 100-point person scores" data-path="PISA/person_scores_100.csv" data-size="40760">
+        <a class="file-main" href="./PISA/person_scores_100.csv"><span class="type">CSV</span><span class="file-copy"><strong>person_scores_100.csv</strong><small>100-point person scores · 39.8 KiB (40,760 bytes)</small></span></a>
+        <a class="source" href="https://github.com/AndersH3/Scoring/blob/main/PISA/person_scores_100.csv" target="_blank" rel="noopener noreferrer" aria-label="View PISA/person_scores_100.csv on GitHub">GitHub</a></li>
+<li class="file" data-file="pisa/item_analysis.r.docx docx item-scoring analysis program — word version" data-path="PISA/item_analysis.r.docx" data-size="36638">
+        <a class="file-main" href="./PISA/item_analysis.r.docx"><span class="type">DOCX</span><span class="file-copy"><strong>item_analysis.r.docx</strong><small>Item-scoring analysis program — Word version · 35.78 KiB (36,638 bytes)</small></span></a>
+        <a class="source" href="https://github.com/AndersH3/Scoring/blob/main/PISA/item_analysis.r.docx" target="_blank" rel="noopener noreferrer" aria-label="View PISA/item_analysis.r.docx on GitHub">GitHub</a></li>
+<li class="file" data-file="pisa/pisa12_math_largest_pattern.csv csv largest pisa mathematics response pattern" data-path="PISA/pisa12_math_largest_pattern.csv" data-size="32056">
+        <a class="file-main" href="./PISA/pisa12_math_largest_pattern.csv"><span class="type">CSV</span><span class="file-copy"><strong>pisa12_math_largest_pattern.csv</strong><small>Largest PISA mathematics response pattern · 31.3 KiB (32,056 bytes)</small></span></a>
+        <a class="source" href="https://github.com/AndersH3/Scoring/blob/main/PISA/pisa12_math_largest_pattern.csv" target="_blank" rel="noopener noreferrer" aria-label="View PISA/pisa12_math_largest_pattern.csv on GitHub">GitHub</a></li>
+<li class="file" data-file="pisa/pisa_repeated_item_stability.csv csv repeated-item stability results" data-path="PISA/pisa_repeated_item_stability.csv" data-size="31968">
+        <a class="file-main" href="./PISA/pisa_repeated_item_stability.csv"><span class="type">CSV</span><span class="file-copy"><strong>pisa_repeated_item_stability.csv</strong><small>Repeated-item stability results · 31.22 KiB (31,968 bytes)</small></span></a>
+        <a class="source" href="https://github.com/AndersH3/Scoring/blob/main/PISA/pisa_repeated_item_stability.csv" target="_blank" rel="noopener noreferrer" aria-label="View PISA/pisa_repeated_item_stability.csv on GitHub">GitHub</a></li>
+<li class="file" data-file="pisa/pisa12_math_item_weights.csv csv pisa 2012 mathematics item weights" data-path="PISA/pisa12_math_item_weights.csv" data-size="24483">
+        <a class="file-main" href="./PISA/pisa12_math_item_weights.csv"><span class="type">CSV</span><span class="file-copy"><strong>pisa12_math_item_weights.csv</strong><small>PISA 2012 mathematics item weights · 23.91 KiB (24,483 bytes)</small></span></a>
+        <a class="source" href="https://github.com/AndersH3/Scoring/blob/main/PISA/pisa12_math_item_weights.csv" target="_blank" rel="noopener noreferrer" aria-label="View PISA/pisa12_math_item_weights.csv on GitHub">GitHub</a></li>
+<li class="file" data-file="pisa/pisa_pm995q02_across_patterns.png png pm995q02 cross-pattern figure" data-path="PISA/pisa_pm995q02_across_patterns.png" data-size="17856">
+        <a class="file-main" href="./PISA/pisa_pm995q02_across_patterns.png"><span class="type">PNG</span><span class="file-copy"><strong>pisa_pm995q02_across_patterns.png</strong><small>PM995Q02 cross-pattern figure · 17.44 KiB (17,856 bytes)</small></span></a>
+        <a class="source" href="https://github.com/AndersH3/Scoring/blob/main/PISA/pisa_pm995q02_across_patterns.png" target="_blank" rel="noopener noreferrer" aria-label="View PISA/pisa_pm995q02_across_patterns.png on GitHub">GitHub</a></li>
+<li class="file" data-file="pisa/pisa_booklet_stability_analysis.r.docx docx pisa booklet stability analysis — word version" data-path="PISA/pisa_booklet_stability_analysis.r.docx" data-size="15637">
+        <a class="file-main" href="./PISA/pisa_booklet_stability_analysis.r.docx"><span class="type">DOCX</span><span class="file-copy"><strong>pisa_booklet_stability_analysis.r.docx</strong><small>PISA booklet stability analysis — Word version · 15.27 KiB (15,637 bytes)</small></span></a>
+        <a class="source" href="https://github.com/AndersH3/Scoring/blob/main/PISA/pisa_booklet_stability_analysis.r.docx" target="_blank" rel="noopener noreferrer" aria-label="View PISA/pisa_booklet_stability_analysis.r.docx on GitHub">GitHub</a></li>
+<li class="file" data-file="pisa/item_weights_100.csv csv 100-point item weights" data-path="PISA/item_weights_100.csv" data-size="10408">
+        <a class="file-main" href="./PISA/item_weights_100.csv"><span class="type">CSV</span><span class="file-copy"><strong>item_weights_100.csv</strong><small>100-point item weights · 10.16 KiB (10,408 bytes)</small></span></a>
+        <a class="source" href="https://github.com/AndersH3/Scoring/blob/main/PISA/item_weights_100.csv" target="_blank" rel="noopener noreferrer" aria-label="View PISA/item_weights_100.csv on GitHub">GitHub</a></li>
+<li class="file" data-file="pisa/pisa_booklet_stability_analysis.r r pisa booklet stability analysis" data-path="PISA/pisa_booklet_stability_analysis.r" data-size="9179">
+        <a class="file-main" href="./PISA/pisa_booklet_stability_analysis.r"><span class="type">R</span><span class="file-copy"><strong>pisa_booklet_stability_analysis.r</strong><small>PISA booklet stability analysis · 8.96 KiB (9,179 bytes)</small></span></a>
+        <a class="source" href="https://github.com/AndersH3/Scoring/blob/main/PISA/pisa_booklet_stability_analysis.r" target="_blank" rel="noopener noreferrer" aria-label="View PISA/pisa_booklet_stability_analysis.r on GitHub">GitHub</a></li>
+<li class="file" data-file="pisa/person_scores.csv csv person-level scoring results" data-path="PISA/person_scores.csv" data-size="7578">
+        <a class="file-main" href="./PISA/person_scores.csv"><span class="type">CSV</span><span class="file-copy"><strong>person_scores.csv</strong><small>Person-level scoring results · 7.4 KiB (7,578 bytes)</small></span></a>
+        <a class="source" href="https://github.com/AndersH3/Scoring/blob/main/PISA/person_scores.csv" target="_blank" rel="noopener noreferrer" aria-label="View PISA/person_scores.csv on GitHub">GitHub</a></li>
+<li class="file" data-file="pisa/item_weights.csv csv item-weight results" data-path="PISA/item_weights.csv" data-size="5929">
+        <a class="file-main" href="./PISA/item_weights.csv"><span class="type">CSV</span><span class="file-copy"><strong>item_weights.csv</strong><small>Item-weight results · 5.79 KiB (5,929 bytes)</small></span></a>
+        <a class="source" href="https://github.com/AndersH3/Scoring/blob/main/PISA/item_weights.csv" target="_blank" rel="noopener noreferrer" aria-label="View PISA/item_weights.csv on GitHub">GitHub</a></li>
+<li class="file" data-file="pisa/pisa_pm995q02_across_patterns.csv csv pm995q02 results across patterns" data-path="PISA/pisa_pm995q02_across_patterns.csv" data-size="939">
+        <a class="file-main" href="./PISA/pisa_pm995q02_across_patterns.csv"><span class="type">CSV</span><span class="file-copy"><strong>pisa_pm995q02_across_patterns.csv</strong><small>PM995Q02 results across patterns · 939 bytes</small></span></a>
+        <a class="source" href="https://github.com/AndersH3/Scoring/blob/main/PISA/pisa_pm995q02_across_patterns.csv" target="_blank" rel="noopener noreferrer" aria-label="View PISA/pisa_pm995q02_across_patterns.csv on GitHub">GitHub</a></li>
+<li class="file" data-file="pisa/pisa12_response_pattern_summary.csv csv pisa response-pattern summary" data-path="PISA/pisa12_response_pattern_summary.csv" data-size="333">
+        <a class="file-main" href="./PISA/pisa12_response_pattern_summary.csv"><span class="type">CSV</span><span class="file-copy"><strong>pisa12_response_pattern_summary.csv</strong><small>PISA response-pattern summary · 333 bytes</small></span></a>
+        <a class="source" href="https://github.com/AndersH3/Scoring/blob/main/PISA/pisa12_response_pattern_summary.csv" target="_blank" rel="noopener noreferrer" aria-label="View PISA/pisa12_response_pattern_summary.csv on GitHub">GitHub</a></li>
+<li class="file" data-file="pisa/pisa_major_pattern_summary.csv csv major pisa response-pattern summary" data-path="PISA/pisa_major_pattern_summary.csv" data-size="292">
+        <a class="file-main" href="./PISA/pisa_major_pattern_summary.csv"><span class="type">CSV</span><span class="file-copy"><strong>pisa_major_pattern_summary.csv</strong><small>Major PISA response-pattern summary · 292 bytes</small></span></a>
+        <a class="source" href="https://github.com/AndersH3/Scoring/blob/main/PISA/pisa_major_pattern_summary.csv" target="_blank" rel="noopener noreferrer" aria-label="View PISA/pisa_major_pattern_summary.csv on GitHub">GitHub</a></li></ul>
+      <div class="reference-heading"><h3>Supporting references</h3></div><ul class="reference-list"><li class="reference-item" data-reference="pisa pisa 2012 released mathematics questions (pdf) https://released-math-exams.weebly.com/uploads/2/7/0/8/27087321/pisa_2012.pdf"><a class="reference" href="https://released-math-exams.weebly.com/uploads/2/7/0/8/27087321/pisa_2012.pdf" target="_blank" rel="noopener noreferrer"><span class="domain">released-math-exams.weebly.com</span><strong>PISA 2012 released mathematics questions (PDF)</strong><span>https://released-math-exams.weebly.com/uploads/2/7/0/8/27087321/pisa_2012.pdf</span></a></li>
+<li class="reference-item" data-reference="pisa programme for international student assessment https://en.wikipedia.org/wiki/programme_for_international_student_assessment"><a class="reference" href="https://en.wikipedia.org/wiki/Programme_for_International_Student_Assessment" target="_blank" rel="noopener noreferrer"><span class="domain">en.wikipedia.org</span><strong>Programme for International Student Assessment</strong><span>https://en.wikipedia.org/wiki/Programme_for_International_Student_Assessment</span></a></li>
+<li class="reference-item" data-reference="pisa the pisa test https://www.oecd.org/en/about/programmes/pisa/pisa-test.html"><a class="reference" href="https://www.oecd.org/en/about/programmes/pisa/pisa-test.html" target="_blank" rel="noopener noreferrer"><span class="domain">www.oecd.org</span><strong>The PISA test</strong><span>https://www.oecd.org/en/about/programmes/pisa/pisa-test.html</span></a></li>
+<li class="reference-item" data-reference="pisa pisa 2012 database https://www.oecd.org/en/data/datasets/pisa-2012-database.html"><a class="reference" href="https://www.oecd.org/en/data/datasets/pisa-2012-database.html" target="_blank" rel="noopener noreferrer"><span class="domain">www.oecd.org</span><strong>PISA 2012 database</strong><span>https://www.oecd.org/en/data/datasets/pisa-2012-database.html</span></a></li>
+<li class="reference-item" data-reference="pisa different complex word problems require different combinations of cognitive skills https://www.researchgate.net/publication/352902730_different_complex_word_problems_require_different_combinations_of_cognitive_skills"><a class="reference" href="https://www.researchgate.net/publication/352902730_Different_complex_word_problems_require_different_combinations_of_cognitive_skills" target="_blank" rel="noopener noreferrer"><span class="domain">www.researchgate.net</span><strong>Different complex word problems require different combinations of cognitive skills</strong><span>https://www.researchgate.net/publication/352902730_Different_complex_word_problems_require_different_combinations_of_cognitive_skills</span></a></li>
+<li class="reference-item" data-reference="pisa programme for international student assessment (pisa) https://www.oecd.org/en/about/programmes/pisa.html"><a class="reference" href="https://www.oecd.org/en/about/programmes/pisa.html" target="_blank" rel="noopener noreferrer"><span class="domain">www.oecd.org</span><strong>Programme for International Student Assessment (PISA)</strong><span>https://www.oecd.org/en/about/programmes/pisa.html</span></a></li>
+<li class="reference-item" data-reference="pisa pisa 2012 results: what students know and can do — volume i https://www.oecd.org/en/publications/pisa-2012-results-what-students-know-and-can-do-volume-i_9789264201118-en.html"><a class="reference" href="https://www.oecd.org/en/publications/pisa-2012-results-what-students-know-and-can-do-volume-i_9789264201118-en.html" target="_blank" rel="noopener noreferrer"><span class="domain">www.oecd.org</span><strong>PISA 2012 Results: What Students Know and Can Do — Volume I</strong><span>https://www.oecd.org/en/publications/pisa-2012-results-what-students-know-and-can-do-volume-i_9789264201118-en.html</span></a></li>
+<li class="reference-item" data-reference="pisa somers https://en.wikipedia.org/wiki/somers"><a class="reference" href="https://en.wikipedia.org/wiki/Somers" target="_blank" rel="noopener noreferrer"><span class="domain">en.wikipedia.org</span><strong>Somers</strong><span>https://en.wikipedia.org/wiki/Somers</span></a></li></ul>
     </section>
+<section class="panel project" id="shared-files" data-project="" aria-labelledby="shared-files-heading">
+      <div class="panel-head"><div><p class="eyebrow">Repository root</p>
+      <h2 id="shared-files-heading">Shared files</h2>
+      <p class="section-note">1 files · largest first</p></div>
+      <a class="button" href="https://github.com/AndersH3/Scoring/tree/main" target="_blank" rel="noopener noreferrer">Repository on GitHub</a></div>
+      <ul class="file-list"><li class="file" data-file="item_analysis.r r item-scoring analysis program" data-path="item_analysis.r" data-size="54526">
+        <a class="file-main" href="./item_analysis.r"><span class="type">R</span><span class="file-copy"><strong>item_analysis.r</strong><small>Item-scoring analysis program · 53.25 KiB (54,526 bytes)</small></span></a>
+        <a class="source" href="https://github.com/AndersH3/Scoring/blob/main/item_analysis.r" target="_blank" rel="noopener noreferrer" aria-label="View item_analysis.r on GitHub">GitHub</a></li></ul>
+      
+    </section></div>
+    <p class="panel empty" id="empty-state" hidden>No files or references match these filters.</p>
   </main>
-
-  <footer class="wrap">
-    Published from the <a href="https://github.com/AndersH3/Scoring">AndersH3/Scoring</a> repository with GitHub Pages.
-  </footer>
-
-  <script>
-    const search = document.getElementById("file-search");
-    const files = Array.from(document.querySelectorAll(".file"));
-    const count = document.getElementById("file-count");
-    const empty = document.getElementById("empty-state");
-
-    search.addEventListener("input", () => {
-      const query = search.value.trim().toLowerCase();
-      let visible = 0;
-
-      files.forEach((file) => {
-        const matches = !query || file.dataset.file.includes(query);
-        file.hidden = !matches;
-        if (matches) visible += 1;
-      });
-
-      count.textContent = visible + (visible === 1 ? " file" : " files");
-      empty.hidden = visible !== 0;
-    });
-  </script>
+  <footer class="wrap">Published from the <a href="https://github.com/AndersH3/Scoring">AndersH3/Scoring</a> repository with GitHub Pages.</footer>
+  <script type="application/json" id="repository-data">{"tree":[{"path":"CNAME","type":"blob","mode":"100644","size":20,"sha":"683f67ecc14e4be3cc0cd97b3aa93e5734a04d74"},{"path":"LICENSE","type":"blob","mode":"100644","size":7048,"sha":"0e259d42c996742e9e3cba14c677129b2c1b6311"},{"path":"PISA","type":"tree","mode":"040000","sha":"51183c2c49e636fd26cf25c5287a1ee7ddbc4e56"},{"path":"PISA/exclude.txt","type":"blob","mode":"100644","size":128,"sha":"e8b1a08afd7c914361e4b34cd804783d548c00c3"},{"path":"PISA/item_analysis.r.docx","type":"blob","mode":"100644","size":36638,"sha":"c60f29e98a24662569430e82d0ed5a7720723c3b"},{"path":"PISA/item_analysis.r.md","type":"blob","mode":"100644","size":54555,"sha":"1f54b8e0a00af7052ba2a65b6840af6362ee5317"},{"path":"PISA/item_analysis.r.odt","type":"blob","mode":"100644","size":76144,"sha":"e8ff049e97a58bf2533730627662cba739279603"},{"path":"PISA/item_weights.csv","type":"blob","mode":"100644","size":5929,"sha":"567cfac3955a027c168d7e8b9ea56874f8908346"},{"path":"PISA/item_weights_100.csv","type":"blob","mode":"100644","size":10408,"sha":"83aec6bbab06bf4eea77cf095d9c9cf4558e5d09"},{"path":"PISA/links.txt","type":"blob","mode":"100644","size":695,"sha":"a5c0f63c828a58d625b5b929cc30b73d3d4e3cb7"},{"path":"PISA/person_scores.csv","type":"blob","mode":"100644","size":7578,"sha":"463e6a47932a847bed9294427b057a1f08b98aa9"},{"path":"PISA/person_scores_100.csv","type":"blob","mode":"100644","size":40760,"sha":"8c50362aeb074decb35284f36b8795bf9932beaf"},{"path":"PISA/pisa12_math_item_weights.csv","type":"blob","mode":"100644","size":24483,"sha":"387cfbb46780684ab8777629f37d2073a0e6895b"},{"path":"PISA/pisa12_math_largest_pattern.csv","type":"blob","mode":"100644","size":32056,"sha":"d1c6b9070145a969b3a7609f74c7e3364324b1e1"},{"path":"PISA/pisa12_math_person_scores.csv","type":"blob","mode":"100644","size":286042,"sha":"0101b04da5e85475ec78d9816c649211b7437b47"},{"path":"PISA/pisa12_response_pattern_summary.csv","type":"blob","mode":"100644","size":333,"sha":"8728d06abcec5459f00d91921f01cabb9f1f5231"},{"path":"PISA/pisa_all_pattern_item_calibrations.csv","type":"blob","mode":"100644","size":54628,"sha":"9919161dfb1cb5a3246c505f0b304a50f25b2dde"},{"path":"PISA/pisa_booklet_stability_analysis.r","type":"blob","mode":"100644","size":9179,"sha":"74cf4b63c883781d8c4f484a7ce5bcc3e2a16631"},{"path":"PISA/pisa_booklet_stability_analysis.r.docx","type":"blob","mode":"100644","size":15637,"sha":"a792e964385e58383faae91b0425713f60e52c72"},{"path":"PISA/pisa_booklet_stability_analysis.r.md","type":"blob","mode":"100644","size":9226,"sha":"8c30f9587528f9c65c4bbd03eaac8f71344a4e0a"},{"path":"PISA/pisa_booklet_stability_analysis.r.odt","type":"blob","mode":"100644","size":55227,"sha":"f5bc797ec0a146ae56cb65c8c883d1cade75b514"},{"path":"PISA/pisa_major_pattern_summary.csv","type":"blob","mode":"100644","size":292,"sha":"60133d388a38e3db8e49c3e1eedc70b835e536b2"},{"path":"PISA/pisa_pm995q02_across_patterns.csv","type":"blob","mode":"100644","size":939,"sha":"1586abd54091accc7823a6c07b581af1d4241043"},{"path":"PISA/pisa_pm995q02_across_patterns.png","type":"blob","mode":"100644","size":17856,"sha":"5fd87c1ea512a026c07b72dc4652030340db4021"},{"path":"PISA/pisa_repeated_item_pairwise.csv","type":"blob","mode":"100644","size":141931,"sha":"96c244610128b6372158a543874b601a729a8f1c"},{"path":"PISA/pisa_repeated_item_stability.csv","type":"blob","mode":"100644","size":31968,"sha":"b0c7ee80fa28a968a9bb2cc087f4a978bc5c4d7c"},{"path":"PISA/pisa_repeated_item_weight_stability.png","type":"blob","mode":"100644","size":41489,"sha":"0eb7606a491833eccb3ae9130bb24d36c6990ca2"},{"path":"PISA/r-to-odt.sh","type":"blob","mode":"100644","size":457,"sha":"1b0dcab6f7773e321e40007985022b4ca492e561"},{"path":"PISA/report.pdf","type":"blob","mode":"100644","size":893947,"sha":"31f6f2c124f1edd3f8a3c5034029137033c2e61e"},{"path":"analytics.js","type":"blob","mode":"100644","size":3427,"sha":"8914f7e4ed1545cc544b45a6d854d02f6153d614"},{"path":"index.html","type":"blob","mode":"100644","size":26914,"sha":"431a4370651c69e920941a948cc6ae89a089de76"},{"path":"item_analysis.r","type":"blob","mode":"100644","size":54526,"sha":"a336d1b3d9964bd5f2e0f90f214e15d540be827d"},{"path":"exclude.txt","type":"blob","mode":"100644","size":332,"sha":"29abd9a7c47aae7bb81d219046cf141ac6171054"}],"metadata":{"exclude.txt":{"content":"# Rules apply within this folder and its descendants.\n# A filename matches that name anywhere below this folder.\n# A path is relative to this folder; a trailing / excludes a subtree.\n# Subproject exclude.txt files add rules only for their own subtree.\nexclude.txt\nlinks.txt\nCNAME\nLICENSE\nanalytics.js\nindex.html\nrepository-index.js\n","sha":"29abd9a7c47aae7bb81d219046cf141ac6171054"},"PISA/exclude.txt":{"content":"exclude.txt\nlinks.txt\nCNAME\nLICENSE\nanalytics.js\nindex.html\nitem_analysis.r.md\npisa_booklet_stability_analysis.r.md\nr-to-odt.sh\n","sha":"e8b1a08afd7c914361e4b34cd804783d548c00c3"},"PISA/links.txt":{"content":"https://released-math-exams.weebly.com/uploads/2/7/0/8/27087321/pisa_2012.pdf\nhttps://en.wikipedia.org/wiki/Programme_for_International_Student_Assessment\nhttps://www.oecd.org/en/about/programmes/pisa/pisa-test.html\nhttps://www.oecd.org/en/data/datasets/pisa-2012-database.html\nhttps://www.researchgate.net/publication/352902730_Different_complex_word_problems_require_different_combinations_of_cognitive_skills\nhttps://www.oecd.org/en/about/programmes/pisa.html\nhttps://www.oecd.org/en/publications/pisa-2012-results-what-students-know-and-can-do-volume-i_9789264201118-en.html \nhttps://released-math-exams.weebly.com/uploads/2/7/0/8/27087321/pisa_2012.pdf\nhttps://en.wikipedia.org/wiki/Somers\n","sha":"a5c0f63c828a58d625b5b929cc30b73d3d4e3cb7"}},"labels":{"files":{"report.pdf":"Full scoring-method report","pisa12_math_person_scores.csv":"PISA 2012 mathematics person scores","pisa_repeated_item_pairwise.csv":"Pairwise repeated-item analysis","item_analysis.r.odt":"Item-scoring analysis program — OpenDocument version","pisa_booklet_stability_analysis.r.odt":"PISA booklet stability analysis — OpenDocument version","pisa_all_pattern_item_calibrations.csv":"Cross-pattern item calibrations","item_analysis.r":"Item-scoring analysis program","pisa_repeated_item_weight_stability.png":"Repeated-item weight stability figure","person_scores_100.csv":"100-point person scores","item_analysis.r.docx":"Item-scoring analysis program — Word version","pisa12_math_largest_pattern.csv":"Largest PISA mathematics response pattern","pisa_repeated_item_stability.csv":"Repeated-item stability results","pisa12_math_item_weights.csv":"PISA 2012 mathematics item weights","pisa_pm995q02_across_patterns.png":"PM995Q02 cross-pattern figure","pisa_booklet_stability_analysis.r.docx":"PISA booklet stability analysis — Word version","item_weights_100.csv":"100-point item weights","pisa_booklet_stability_analysis.r":"PISA booklet stability analysis","person_scores.csv":"Person-level scoring results","item_weights.csv":"Item-weight results","pisa_pm995q02_across_patterns.csv":"PM995Q02 results across patterns","pisa12_response_pattern_summary.csv":"PISA response-pattern summary","pisa_major_pattern_summary.csv":"Major PISA response-pattern summary"},"references":{"https://released-math-exams.weebly.com/uploads/2/7/0/8/27087321/pisa_2012.pdf":"PISA 2012 released mathematics questions (PDF)","https://en.wikipedia.org/wiki/Programme_for_International_Student_Assessment":"Programme for International Student Assessment","https://www.oecd.org/en/about/programmes/pisa/pisa-test.html":"The PISA test","https://www.oecd.org/en/data/datasets/pisa-2012-database.html":"PISA 2012 database","https://www.researchgate.net/publication/352902730_Different_complex_word_problems_require_different_combinations_of_cognitive_skills":"Different complex word problems require different combinations of cognitive skills","https://www.oecd.org/en/about/programmes/pisa.html":"Programme for International Student Assessment (PISA)","https://www.oecd.org/en/publications/pisa-2012-results-what-students-know-and-can-do-volume-i_9789264201118-en.html":"PISA 2012 Results: What Students Know and Can Do — Volume I","https://en.wikipedia.org/wiki/Somers":"Somers"}}}</script>
 </body>
 </html>

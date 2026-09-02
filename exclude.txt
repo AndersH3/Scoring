@@ -1,0 +1,11 @@
+# Rules apply within this folder and its descendants.
+# A filename matches that name anywhere below this folder.
+# A path is relative to this folder; a trailing / excludes a subtree.
+# Subproject exclude.txt files add rules only for their own subtree.
+exclude.txt
+links.txt
+CNAME
+LICENSE
+analytics.js
+index.html
+repository-index.js

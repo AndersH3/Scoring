@@ -40,7 +40,10 @@
   tracker.addEventListener("load", () => {
     // Record file downloads and outbound clicks as events in addition to the
     // normal page-view/referrer data.
-    document.querySelectorAll("a[href]").forEach((link) => {
+    document.addEventListener("click", (event) => {
+      // Delegation also covers links added by the live subproject index.
+      const link = event.target.closest?.("a[href]");
+      if (!link) return;
       const href = link.getAttribute("href");
       if (!href || href.startsWith("#") || href.startsWith("mailto:") || href.startsWith("tel:")) return;
 
@@ -63,14 +66,12 @@
         ? `download-${url.pathname.replace(/^\/+/, "")}`
         : `outbound-${url.hostname}`;
 
-      link.addEventListener("click", () => {
-        if (!window.goatcounter || typeof window.goatcounter.count !== "function") return;
-        window.goatcounter.count({
-          path: eventName,
-          title: (link.textContent || link.getAttribute("aria-label") || href).trim().slice(0, 200),
-          event: true,
-          no_session: true,
-        });
+      if (!window.goatcounter || typeof window.goatcounter.count !== "function") return;
+      window.goatcounter.count({
+        path: eventName,
+        title: (link.textContent || link.getAttribute("aria-label") || href).trim().slice(0, 200),
+        event: true,
+        no_session: true,
       });
     });
 
@@ -96,3 +97,4 @@
 
   document.head.appendChild(tracker);
 })();
+
