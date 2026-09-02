@@ -176,6 +176,18 @@
     const saved = JSON.parse(doc.getElementById("repository-data").textContent);
     const search = doc.getElementById("file-search");
     const select = doc.getElementById("project-select");
+    function renderModel(groups) {
+      const selection = select.value;
+      doc.getElementById("projects").innerHTML = renderGroups(groups);
+      doc.getElementById("project-navigation").innerHTML = renderNavigation(groups);
+      select.innerHTML = renderOptions(groups);
+      select.value = [...select.options].some(option => option.value === selection) ? selection : "";
+      const count = totals(groups);
+      for (const name of ["projects", "files", "references"]) doc.getElementById(name + "-total").textContent = count[name];
+    }
+    // Apply the current ordering even if the HTML came from an older cache.
+    const current = buildModel(saved);
+    renderModel(current);
     search.disabled = select.disabled = false;
     search.addEventListener("input", () => filterPage(doc));
     select.addEventListener("change", () => filterPage(doc));
@@ -200,15 +212,9 @@
     try {
       const snapshot = await fetchSnapshot(saved);
       const groups = buildModel(snapshot);
-      const current = buildModel(saved);
       if (JSON.stringify(groups) !== JSON.stringify(current)) {
         const selection = select.value;
-        doc.getElementById("projects").innerHTML = renderGroups(groups);
-        doc.getElementById("project-navigation").innerHTML = renderNavigation(groups);
-        select.innerHTML = renderOptions(groups);
-        select.value = [...select.options].some(option => option.value === selection) ? selection : "";
-        const count = totals(groups);
-        for (const name of ["projects", "files", "references"]) doc.getElementById(name + "-total").textContent = count[name];
+        renderModel(groups);
         filterPage(doc);
         if (!selection && !search.value) followHash();
       }
