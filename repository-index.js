@@ -87,11 +87,8 @@
       const links = references(file.content, labels.references);
       if (links.length) group(folder).references = links;
     });
-    const result = [...groups.values()].sort((a, b) => {
-      if (!a.path) return 1;
-      if (!b.path) return -1;
-      return compare(a.path, b.path);
-    });
+    // The empty repository-root path sorts first, then subproject paths.
+    const result = [...groups.values()].sort((a, b) => compare(a.path, b.path));
     for (const entry of result) entry.files.sort((a, b) => b.size - a.size || compare(a.path, b.path));
     return result;
   }
