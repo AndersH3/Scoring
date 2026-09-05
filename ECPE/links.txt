@@ -1,0 +1,8 @@
+https://michiganassessment.org/which-test-is-right-for-me/ecpe/
+https://michiganassessment.org/which-test-is-right-for-me/ecpe/ecpe-preparation/
+https://tmsalab.github.io/edmdata/
+https://tmsalab.github.io/edmdata/reference/items_ecpe.html
+https://tmsalab.github.io/edmdata/reference/qmatrix_ecpe.html
+https://doi.org/10.1111/emip.12010
+https://doi.org/10.1007/s11336-013-9362-0
+https://github.com/harrelfe/Hmisc/blob/master/R/somers2.s

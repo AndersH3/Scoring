@@ -1,0 +1,800 @@
+\documentclass[11pt,a4paper,oneside,headings=normal,parskip=half]{scrreprt}
+\usepackage[margin=17mm,headheight=15pt,headsep=6mm,footskip=9mm]{geometry}
+\usepackage{fontspec}
+\setmainfont{Latin Modern Roman}
+\setsansfont{Latin Modern Sans}
+\setmonofont[Scale=0.87]{Latin Modern Mono}
+\usepackage{mathtools}
+\usepackage{unicode-math}
+\setmathfont{Latin Modern Math}
+\usepackage[protrusion=true,expansion=false]{microtype}
+\usepackage[english]{babel}
+\usepackage{graphicx,xcolor,enumitem}
+\usepackage[most]{tcolorbox}
+\usepackage{tabularray}
+\UseTblrLibrary{booktabs}
+\usepackage{float,placeins,listings,xurl}
+\usepackage[authoryear,round]{natbib}
+\usepackage{scrlayer-scrpage}
+\usepackage{hyperref}
+\usepackage{bookmark}
+\definecolor{ink}{HTML}{163E54}
+\definecolor{lightblue}{HTML}{EAF1F5}
+\definecolor{rust}{HTML}{A34223}
+\hypersetup{colorlinks=true,linkcolor=ink,citecolor=ink,urlcolor=ink,
+ pdftitle={ECPE as a Stress Test of a Difficulty- and Positive-Somers-Weighted Scoring System},
+ pdfauthor={Prepared for Anders Hellström with OpenAI ChatGPT assistance},
+ pdfsubject={Mathematical specification, empirical stress tests, project synthesis, and AI-use disclosure}}
+\clearpairofpagestyles
+\ihead{\small ECPE and the two-pad scoring system}
+\ohead{\small Technical report}
+\cfoot*{\pagemark}
+\setkomafont{disposition}{\sffamily\bfseries\color{ink}}
+\setlength{\parfillskip}{0pt plus 1fil}
+\emergencystretch=2em
+\raggedbottom
+\setcounter{tocdepth}{1}
+\setcounter{secnumdepth}{2}
+\setlist{nosep,leftmargin=*}
+\newtcolorbox{finding}[1]{enhanced,breakable,colback=lightblue,colframe=ink,title={#1},fonttitle=\bfseries,boxrule=.6pt,arc=1mm}
+\newtcolorbox{caution}[1]{enhanced,breakable,colback=orange!5,colframe=rust,title={#1},fonttitle=\bfseries,boxrule=.7pt,arc=1mm}
+\newcommand{\code}[1]{\nolinkurl{#1}}
+\newcommand{\sourcefile}[1]{\par{\footnotesize\textit{Data source:} \code{#1}.}\par}
+\newcommand{\fig}[3]{\begin{figure}[H]\centering\includegraphics[width=\linewidth]{figures/#1.pdf}\caption{#2}\label{#3}\end{figure}}
+\DeclareMathOperator{\RMSE}{RMSE}
+\DeclareMathOperator{\E}{E}
+\DeclareMathOperator{\Var}{Var}
+\lstset{language=R,basicstyle=\ttfamily\footnotesize,breaklines=true,columns=fullflexible,keepspaces=true,showstringspaces=false,numbers=left,numberstyle=\tiny\color{gray},numbersep=5pt,frame=single,rulecolor=\color{gray!40},xleftmargin=4mm,commentstyle=\color{gray!80!black},keywordstyle=\color{ink},stringstyle=\color{rust},tabsize=2}
+\begin{document}
+\begin{titlepage}
+\centering
+\vspace*{10mm}
+{\sffamily\bfseries\color{ink}\Huge ECPE as a Stress Test\par}
+\vspace{5mm}
+{\sffamily\bfseries\LARGE A Difficulty- and Positive-Somers-Weighted Binary Scoring System\par}
+\vspace{7mm}
+{\Large Complete specification, empirical evidence,\par methodological assessment and project synthesis\par}
+\vspace{9mm}
+{\large Prepared for Anders Hellström\par}
+{\large New Scoring System project\par}
+\vspace{4mm}
+{\large Research edition 1.0 \quad September 2026\par}
+\vspace{10mm}
+\begin{caution}{AI USE DISCLOSURE — READ BEFORE USING THIS REPORT}
+This report was substantially researched, written, mathematically developed, coded and typeset by OpenAI ChatGPT, acting through the Codex/Work Mode environment, in response to Anders Hellström's instructions. AI generated the stress-test implementation and the supplementary analyses; the user supplied the scoring project, earlier report and completed ECPE run. The report has not undergone an independently verified human methodological review. It is a research document, not an official ECPE scoring or certification method. A full account of AI contributions, verification and limitations appears in the \textbf{final appendix, Appendix~\ref{app:ai}}.
+\end{caution}
+\vfill
+{\large 2,922 examinees \quad 28 binary grammar items \quad 3 Q-matrix attributes\par}
+\vspace{5mm}
+{\small Based on \code{edmdata} 1.3.0; the submitted ECPE outputs; the pinned current scoring source; and primary-source web research.\par}
+\end{titlepage}
+\pagenumbering{roman}
+\chapter*{Abstract}
+\addcontentsline{toc}{chapter}{Abstract}
+This report evaluates Anders Hellström's current two-pad binary scoring rule using the historical ECPE grammar response matrix distributed in \code{edmdata}. The rule combines a smoothed logarithmic rarity factor with a smoothed logarithmic transformation of the positive part of item-rest Somers' $D$. Their product supplies positive item weights; normalization produces a weighted proportion correct. The report specifies the statistic, its direction and treatment of ties, constants, negative association, padding and normalization. It separates this implementation from earlier rank-cut and intermediate concordance versions in the project.
+
+The submitted run contains 2,922 complete response vectors on 28 items, with a fixed 2,045-person calibration sample and 877-person audit sample. Full-sample weights are modestly differentiated: the largest item share is 5.53\%, the effective item count is 27.08, and the weighted/raw Spearman correlation is 0.99577. There are nevertheless 20,944 strict reversals among 4,006,254 unequal-raw-score person pairs. Across 500 calibration bootstraps, median audit score RMSE against the frozen calibration reference is 0.00237. Random split-half consistency changes only slightly: the median paired Spearman--Brown difference is 0.00090.
+
+Stress tests expose more consequential structural behavior. An appended all-zero item takes 13.19\% of the score denominator. Five exact copies of the most heavily weighted item take 32.70\%, and the copies plus their original take 39.24\%. In a new supplementary experiment, independent Bernoulli items with 1\% or 5\% success probabilities receive more weight than every original item in all 1,000 replicates per condition. A separate endpoint-preserving monotone quadratic explains much of the relationship between raw and weighted scores, but cannot recover response-pattern differences within a raw-score total.
+
+These findings support computational transparency and local calibration stability on this dataset. They do not establish superior proficiency measurement, fairness, official ECPE equivalence or a validated passing standard. ECPE provides a cleaner same-form test than the project's earlier rotated PISA analysis; it does not remove the need for external validation, content constraints and explicit treatment of uninformative items.
+
+\begin{finding}{How to read the evidence}
+\textbf{Observed:} results in the user's submitted ECPE archive. \textbf{Derived:} algebra and additional calculations from those data. \textbf{Supplementary:} newly executed simulations and regressions supplied with this report. \textbf{Historical:} findings reported in the earlier PISA project, not rerun here. \textbf{Proposed:} future evaluations or modifications, not part of the current scoring rule.
+\end{finding}
+\tableofcontents
+\clearpage
+\pagenumbering{arabic}
+
+\chapter{Purpose, scope and evidence}
+\section{Questions this report can answer}
+The immediate question is whether the current scoring rule behaves coherently and stably when applied to a complete binary language-test dataset. A separate, stronger question is whether it measures the intended proficiency more accurately than existing approaches. The available experiment addresses the first question substantially and the second only indirectly. Its audit reference is itself an estimated version of the proposed score. Close agreement with that reference establishes reproducibility under specified perturbations, not proximity to an independently known ability.
+
+The report therefore asks four concrete questions. What is the exact implemented score? How much does it change ECPE item weights and person ordering? Which perturbations reveal instability or unwanted behavior? What additional evidence would justify a measurement claim? Mathematical identities, empirical observations and judgments about use are distinguished throughout.
+
+\section{Material integrated from the project}
+The central empirical source is the uploaded \code{ecpe_upload.tar.gz}, containing the completed run and its program, data, settings, session information and output manifest. All 39 entries in the supplied manifest matched their files when inspected. The scoring definition is pinned to Git blob \code{a336d1b3d9964bd5f2e0f90f214e15d540be827d} in the project's \code{item_analysis.r} source \citep{hellstromsource}. The stress-test program is version 1.0.0; it implements that definition independently rather than invoking the interactive application.
+
+The uploaded 40-page \code{report_old.pdf} supplies the reporting model and the historical PISA findings \citep{oldreport}. Its useful features are retained: an explicit formula, an established-methods comparison, focused case studies, quantitative tables and a reproducibility appendix. The earlier development memorandum, the PISA response-pattern stability script and the project-supplied methodological review are also considered \citep{development,pisascript,projectreview}. That review is a project document; neither its title nor its presence establishes independent human peer review. Project history informs version distinctions but does not substitute for the pinned executable source.
+
+\section{Research approach and limits}
+Research proceeded by inspecting the source and numerical outputs, checking official ECPE and package documentation, locating original methodological papers or author-maintained software documentation, and comparing the resulting claims with the observed evidence. Searches covered ECPE diagnostic modeling, Somers' $D$ in item analysis, smoothed inverse-frequency weighting, resampling, reliability and recent post-hoc exam weighting. The research cutoff is September 2026. Appendix~\ref{app:sources} records source roles and access limits.
+
+This was an AI-assisted, multi-stage research workflow similar in intent to a detailed research review. It was not a formal systematic review, an exhaustive novelty search or a run of a separately certified ``Deep Research'' service. Some publisher pages were unavailable. In particular, a relevant 2026 score-allocation paper was identified from publisher records and an author's publication list, but its full method was not reviewed; no claim of equivalence to it is made.
+
+
+
+\chapter{ECPE and the analysis dataset}
+\section{The examination and the historical grammar matrix}
+The Examination for the Certificate of Proficiency in English is a four-skill English examination associated with CEFR level C2. Michigan Language Assessment's current public format includes writing, listening, reading and speaking \citep{ecpeofficial}. Its preparation documentation lists the components in Table~\ref{tab:format}; this description provides context for the distinction between the live examination and the research matrix \citep{ecpeformat}.
+
+\begin{table}[H]\centering
+\caption{Current publicly described ECPE format; not the 28-item research dataset.}\label{tab:format}
+\begin{tblr}{width=\linewidth,colspec={l l X},row{1}={font=\bfseries,bg=lightblue},hlines}
+Component & Time & Scope \\
+Writing & 45 min & One response, chosen from two prompts; source material is provided. \\
+Listening & 50 min & 50 questions: short conversations, short talks, multi-speaker discussions. \\
+Reading & 55 min & 70 questions: 16 grammar, 20 cloze, 16 vocabulary, 18 comprehension. \\
+Speaking & 30 min & Five stages, usually two or three candidates and two examiners. \\
+\end{tblr}
+\end{table}
+
+The \code{edmdata} objects used here are \code{items_ecpe} and \code{qmatrix_ecpe}. They contain a 2,922-by-28 binary response matrix and an aligned 28-by-3 item-to-attribute matrix. The dataset is a grammar-test research resource with an established diagnostic-modeling history, including work by \citet{templinhoffman} and \citet{templinbradshaw}. It is not a response file for all sections of today's examination \citep{edmdata,ecpeq}. No exact administration date, representative population sampling frame, official outcome labels or current-form equivalence is inferred from its dimensions.
+
+\section{Input audit and descriptive profile}
+Every supplied response is 0 or 1; there are no missing responses in the matrix analyzed. Item names and Q-matrix rows align. All 28 items vary across people. Observed success proportions range from 0.4333 to 0.8980. Thus the unmodified dataset contains neither extremely rare correct responses nor constant items: those conditions enter only through deliberate stress tests.
+
+The mean raw total is 20.009 of 28, with sample standard deviation 4.591. Observed totals run from 5 to 28; the quartiles are 17, 20 and 24. There are 2,690 distinct response patterns and 24 observed raw totals. These are descriptive features of the supplied records, not estimates of a national or international C2 population.
+
+The identifier \code{person} is a row number created by the program. It is useful for exact replication and case tracing; it is not a recovered candidate identifier. No demographic variables or external proficiency criteria are present in the response files used here.
+
+\section{What the Q-matrix contributes}
+The attributes are morphosyntactic rules, cohesive rules and lexical rules. Nineteen items are assigned to one attribute and nine to two. Table~\ref{tab:q} shows the coverage induced by the current weights. For a skill $k$, coverage is $\sum_j\alpha_j Q_{jk}$, where $\alpha_j$ is the normalized item weight. This counts the full weight of every item associated with that skill.
+
+\begin{table}[H]\centering
+\caption{Attribute coverage under equal and fitted full-sample weights.}\label{tab:q}
+\begin{tblr}{colspec={l r r r},row{1}={font=\bfseries,bg=lightblue},hlines}
+Attribute & Items & Equal-weight coverage & Weighted coverage \\
+Morphosyntactic & 13 & 46.43\% & 50.71\% \\
+Cohesive & 6 & 21.43\% & 18.49\% \\
+Lexical & 18 & 64.29\% & 65.91\% \\
+\end{tblr}
+\end{table}
+\sourcefile{data/q_skill_coverage.csv}
+
+Because attributes overlap, these percentages are not a partition and do not sum to 100\%. The two-pad rule does not use $Q$ when estimating weights. The table is an audit of content emphasis after weighting, not a diagnostic mastery profile. In particular, a large item-rest association can favor content aligned with the dominant composite and need not preserve a deliberately balanced test blueprint.
+
+Diagnostic classification models use an explicit relationship between attributes and response probabilities. The ECPE example in \code{measr} illustrates fitting and evaluating such a model \citep{measrecpe}; hierarchical diagnostic models can additionally restrict or test admissible mastery structures \citep{templinbradshaw}. These are relevant comparators because they address the dataset's skill structure. This report does not fit them or claim that any one is the correct model.
+
+\chapter{The scoring system, completely specified}\label{ch:formula}
+\section{Inputs and the reference score}
+Let $X=(x_{ij})$ contain $n$ calibration persons and $J$ binary items, with $x_{ij}=1$ for a correct response. Define
+\begin{equation}
+T_i=\sum_{j=1}^{J}x_{ij},\qquad c_j=\sum_{i=1}^{n}x_{ij},\qquad p_j=c_j/n.
+\end{equation}
+The default reference for item $j$ is the unweighted \emph{rest score}
+\begin{equation}
+R_{ij}=T_i-x_{ij}.
+\end{equation}
+The optional total-score mode uses $T_i$ instead. The reference is not the final weighted score, and fitting does not iterate until a self-consistent weighted ordering is reached. The default is a one-pass, item-rest calculation.
+
+The stress-test implementation accepts only complete binary matrices with at least two rows and two columns and unique item names. It does not silently impute or drop missing observations. Scoring requires the same item order as calibration. These checks matter: numerical matrix multiplication alone cannot detect a swapped answer column.
+
+\section{Concordance, ties and directional Somers' D}
+For one nonconstant item, compare every pair consisting of a correct responder $a$ and an incorrect responder $b$. There are $N_j=c_j(n-c_j)$ such pairs. Let $P_j$ count $R_{aj}>R_{bj}$, $M_j$ count $R_{aj}<R_{bj}$, and $H_j$ count ties. Then
+\begin{align}
+C_j&=\frac{P_j+\tfrac12H_j}{N_j},\label{eq:C}\\
+D_j&=2C_j-1=\frac{P_j-M_j}{N_j}.\label{eq:D}
+\end{align}
+Thus $C_j$ is the probability-of-superiority estimate with half credit for a tied rest score. $D_j=1$ means every correct responder exceeds every incorrect responder on the rest score; $D_j=-1$ reverses that ordering. $D_j=0$ means equal concordant and discordant cross-group counts, including the case where all rest scores tie. Same-response pairs are excluded from the denominator.
+
+This specification is exactly the convention checked against \code{Hmisc::somers2(rest_score, response)}. It avoids ambiguity in subscripts, because different software uses different names and direction conventions for Somers' $D$. Somers' association measure and its asymmetry are established methods \citep{somers,scipysomers}. The relevant \code{Hmisc} implementation computes the concordance through average ranks \citep{hmisc}.
+
+If $U_j$ is the Mann--Whitney statistic for the correct-response group, using half credit for ties, then $C_j=U_j/[c_j(n-c_j)]$. Equivalently, if $\bar r_1$ is the mean pooled rank of the correct responders,
+\begin{equation}
+ C_j=\frac{\bar r_1-(c_j+1)/2}{n-c_j}.
+\end{equation}
+These identities give independent computational routes to the same statistic. The large number of pairs does not create that many independent observations: each person participates in many pairs. The resampling unit in this study is consequently the person, not an individual pair.
+
+\section{Positive remapping and constant items}
+The discrimination component actually used in the weight is
+\begin{equation}
+ A_j=\max(0,D_j)=\max(0,2C_j-1).\label{eq:A}
+\end{equation}
+The CSV field \code{Cplus} stores $A_j$; despite that name it is the positive part of $D_j$, not the unremapped concordance $C_j$. For example, $C_j=0.50$ gives $A_j=0$, whereas $C_j=0.75$ gives $A_j=0.50$.
+
+For a constant item, $N_j=0$ and empirical $C_j$ and $D_j$ are undefined. They remain \code{NA} in the diagnostic output. The weight calculation alone uses $A_j=0$, equivalent to a neutral weight-only $C_j=0.5$. Reporting empirical $D_j=0$ would conceal the distinction between ``undefined because there is no variation'' and ``estimated no directional association.''
+
+Negative-$D_j$ items are retained, with $A_j=0$. Their discrimination factor becomes neutral, but their rarity factor remains. The rule therefore provides a reward for positive association; it does not penalize a negative association below the rarity-only weight and does not identify and reverse an erroneous scoring key automatically.
+
+\section{The two padded proportions and logarithmic factors}
+The two ``pads'' are
+\begin{align}
+ u_j&=\frac{c_j+1}{n+1},\label{eq:u}\\
+ v_j&=\frac{n-nA_j+1}{n+1}
+     =1-\frac{nA_j}{n+1}.\label{eq:v}
+\end{align}
+Their transformations and product are
+\begin{align}
+ F_{1j}&=1-\ln u_j, & F_{2j}&=1-\ln v_j,\\
+ w_j&=F_{1j}F_{2j}.\label{eq:w}
+\end{align}
+All logarithms are natural. The first factor increases as correct responses become rarer. The second increases as positive item-rest ordering becomes stronger. Multiplication makes high values of one factor more consequential when the other is high.
+
+The quantity $nA_j$ is allowed to be fractional. It must not be rounded. The name \code{concordance_pair_numerator} in the output refers to this transformed pseudo-count, not the actual count $P_j$, $M_j$ or $N_j$. Equation~\eqref{eq:v} does not estimate the probability of an independently sampled Bernoulli event with $n$ trials. Similarly, $(c_j+1)/(n+1)$ is not the usual Beta$(1,1)$ posterior mean, which has denominator $n+2$. Padding here is an explicit numerical design choice.
+
+\section{Operational weights and the person score}
+The application presents minimum-one weights
+\begin{equation}
+ W_j=\frac{w_j}{\min_k w_k}.
+\end{equation}
+For interpretation and scoring, normalized shares are more direct:
+\begin{equation}
+ \alpha_j=\frac{w_j}{\sum_k w_k},\qquad
+ S_i=\frac{\sum_jx_{ij}W_j}{\sum_jW_j}
+    =\sum_jx_{ij}\alpha_j.\label{eq:S}
+\end{equation}
+Minimum-one scaling changes the units in which weights are displayed, but cancels from the normalized score. It neither shrinks the relative weights toward equality nor removes an item. With the weights frozen, a correct answer on item $j$ adds exactly $\alpha_j$ to a person's score.
+
+Every $w_j\ge1$, every $\alpha_j>0$, and $\sum_j\alpha_j=1$. Therefore $S_i\in[0,1]$, the all-zero response vector scores 0 and the all-one vector scores 1. These are mathematical endpoints for possible response vectors; a calibration dataset need not contain people at both endpoints. A score of 0.8 means 80\% of the fitted item-weight total was earned. It is not by itself an 80\% probability of proficiency or a CEFR classification.
+
+\begin{finding}{The implemented rule in one expression}
+For nonconstant items, with $D_j$ defined by the cross-group denominator in Equation~\eqref{eq:D},
+\[
+S_i=\frac{\displaystyle\sum_jx_{ij}
+\left[1-\ln\!\left(\frac{c_j+1}{n+1}\right)\right]
+\left[1-\ln\!\left(\frac{n-n\max(0,D_j)+1}{n+1}\right)\right]}
+{\displaystyle\sum_j
+\left[1-\ln\!\left(\frac{c_j+1}{n+1}\right)\right]
+\left[1-\ln\!\left(\frac{n-n\max(0,D_j)+1}{n+1}\right)\right]}.
+\]
+For a constant item, replace only the weight's $\max(0,D_j)$ term by zero; retain undefined empirical association in diagnostics.
+\end{finding}
+
+\section{A small worked example}
+Consider four response vectors $(0,0,0)$, $(0,1,0)$, $(1,0,1)$ and $(1,1,1)$. All three items have $c=2$, so $u=3/5$ and $F_1=1-\ln(0.6)=1.51083$. For item 1, correct responders have rest scores 1 and 2; incorrect responders have rest scores 0 and 1. Three cross-group pairs are concordant and one ties. Hence $C=3.5/4=0.875$, $D=A=0.75$, $v=0.4$, and $F_2=1.91629$. Item 3 is identical and receives the same weight.
+
+For item 2, both response groups have rest scores 0 and 2. One pair is concordant, one discordant and two tie, giving $C=0.5$, $D=A=0$ and $F_2=1$. The normalized weights are approximately $(0.3965,0.2070,0.3965)$, so the four scores are approximately $0$, $0.2070$, $0.7930$ and $1$. Equal raw counts are not enough to determine the score in general. The intentional duplication of items 1 and 3 also previews a limitation: copies can help create the association that rewards them.
+
+\section{What changed during development}
+The project first used a rank-cut construction: after ordering people, it counted incorrect placement of responses relative to a cut and converted that count into a concordance-like pseudo-count. Tie rules and use of a total rather than a rest score were consequential. For a strict ordering independent of responses, its expected agreement baseline is $p^2+(1-p)^2$, which is higher than one-half when the success proportion is extreme. Optimistic within-tie placement can add further inflation. That historical construction is described in the development memorandum, not implemented in the present ECPE run \citep{development}.
+
+Intermediate discussion considered a rank correlation and then Harrell-style concordance. The current source uses item-rest $C$, converts it to $D=2C-1$, and retains only its positive part. In particular, feeding $C$ directly into the second pad would give a discrimination reward at $C=0.5$; the current positive remapping removes that specific neutral-concordance reward. It does not remove the first factor's rarity preference or sampling noise introduced by truncating $D$ at zero. Results from different versions should not be pooled as though they validate one unchanged estimator.
+
+\chapter{Mathematical behavior and established methods}
+\section{Established components and the scope of originality}
+The method combines familiar statistical operations with a particular set of design choices. Somers' $D$, rank-based concordance, item-rest analysis, logarithmic weighting, positive truncation and normalized weighted sums all have prior uses. Somers' $D$ has specifically been studied as an alternative item-test and item-rest association measure in educational measurement \citep{metsamuuronen}. That precedent concerns an association index; it does not validate the present two-factor weighting rule.
+
+The first factor has an especially close algebraic precedent:
+\begin{equation}
+ F_{1j}=1+\ln\frac{n+1}{c_j+1}.
+\end{equation}
+This is the smoothed inverse-document-frequency factor documented in \code{scikit-learn}, under the substitution ``person = document'' and ``correct response = occurrence'' \citep{tfidf}. The identity concerns the first factor only. Text retrieval does not establish a psychometric rationale for rewarding a rare correct response, and the present discrimination multiplier and score normalization are additional choices.
+
+A recent paper by \citet{kita} addresses robust post-hoc score allocation in exams, with ECPE mentioned in the publisher's indexed record. Its full text was inaccessible in this research session. It is therefore an important related-work lead for a later full comparison, not evidence that the exact two-pad rule is either identical to or different from those methods. The targeted search supports describing the current proposal as a \emph{specific heuristic synthesis}. It does not support an unqualified claim that adaptive item weighting or Somers-based item analysis is newly invented.
+
+\begin{table}[H]\centering
+\caption{Components, purposes and claims that remain to be established.}
+\begin{tblr}{width=\linewidth,colspec={X[1] X[1.3] X[1.4]},row{1}={font=\bfseries,bg=lightblue},hlines}
+Component & Role in this system & Interpretation limit \\
+Item-rest comparison & Reduces direct self-inclusion & Does not remove shared content or duplicate-item dependence. \\
+Somers $D$ & Measures cross-group ordering & Is not an IRT slope or external validity coefficient. \\
+Positive truncation & Rewards positive association & Retains rare negative-association items and introduces a null reward. \\
+Two logarithmic pads & Keep finite weights at finite $n$ & Are not an estimated measurement-error model or a derived optimal loss. \\
+Product and normalization & Allocate the score budget & Can change content emphasis and candidate ordering. \\
+Minimum-one display & Makes the smallest displayed weight 1 & Leaves all normalized scores unchanged. \\
+\end{tblr}
+\end{table}
+
+\section{Bounds, sensitivity and limiting behavior}
+For a finite calibration size,
+\begin{equation}
+1\le F_{1j},F_{2j}\le1+\ln(n+1),\qquad
+1\le w_j\le[1+\ln(n+1)]^2.
+\end{equation}
+The product bound is a safe envelope, not a claim that all combinations of extreme counts and perfect discrimination are simultaneously attainable in a nonconstant item. The choice of natural logarithms is substantive: changing the logarithm base while keeping the additive 1 changes relative weights, not merely their common scale.
+
+Treat $c=np$ as continuous for sensitivity analysis. With $A$ held fixed,
+\begin{equation}
+\frac{\partial F_1}{\partial p}=-\frac{n}{np+1}.
+\end{equation}
+With $p$ held fixed and $A$ varying in its positive branch,
+\begin{equation}
+\frac{\partial F_2}{\partial A}=\frac{n}{n(1-A)+1},\qquad
+\frac{\partial^2 F_2}{\partial A^2}=\frac{n^2}{[n(1-A)+1]^2}>0.
+\end{equation}
+The discrimination transformation is convex and becomes steep near $A=1$. Positive truncation introduces a kink at $D=0$. Consequently symmetric estimation noise in $D$ need not produce symmetric noise in the weight. Even under an independent-item null with centered $D$, $\E[\max(0,D)]$ is positive whenever the null distribution has positive probability above zero. The resulting average discrimination factor can exceed one without genuine association.
+
+For fixed interior values $p>0$ and $A<1$, the large-$n$ limit is
+\begin{equation}
+w_\infty=(1-\ln p)[1-\ln(1-A)].
+\end{equation}
+There is no finite corresponding limit at $p=0$ or $A=1$ in general: the relevant factor grows logarithmically with $n$. These are mathematical boundaries of the rule, not numerical overflow defects.
+
+\fig{formula}{The formula's response to rarity and positive association. Curves are deterministic calculations, not fitted ECPE trends. The left panel holds $n=2,045$ and varies $p$ and $A$; the right shows the increasingly steep discrimination multiplier near perfect association.}{fig:formula}
+
+\section{What is invariant and what is not}
+Reordering persons or reordering items together with their weights leaves scores unchanged. Multiplying all weights by the same positive number also leaves them unchanged. Under frozen weights, changing a response from 0 to 1 strictly increases that person's score by $\alpha_j$. This coordinate-wise monotonicity does not automatically describe an operation that also recalibrates every weight on the changed dataset.
+
+The score's derivative with respect to an unnormalized weight is
+\begin{equation}
+\frac{\partial S_i}{\partial w_j}=\frac{x_{ij}-S_i}{\sum_k w_k}.
+\end{equation}
+Increasing an item's weight raises the scores of people who answered it correctly and lowers those of people who did not, apart from endpoint cases. This explains why adding or heavily weighting an item changes more than the points received by its successful responders: normalization redistributes the denominator across everyone.
+
+Copying every calibration row $m$ times leaves $p$ and $D$ unchanged, but not the pads. At fixed $p,A$,
+\begin{align}
+\frac{dF_1}{dn}&=\frac{1-p}{(n+1)(np+1)},\\
+\frac{dF_2}{dn}&=\frac{A}{(n+1)[n(1-A)+1]}.
+\end{align}
+Both raw factors are nondecreasing with nominal sample size; normalized shares may move in either direction. Exact row replication adds no information, so a resulting score change isolates the padding's explicit dependence on $n$.
+
+\section{Constant and duplicate items}
+An all-zero item has $F_1=1+\ln(n+1)$ and $F_2=1$. An all-one item has $F_1=F_2=1$. If a constant item $z\in\{0,1\}$ is added to calibration and audit data, the original item-rest orderings are unchanged: rest scores either remain as they were or receive the same additive shift. Original raw weights therefore remain unchanged. If the new item's share is $\alpha_*$,
+\begin{equation}
+S_i^{\mathrm{new}}=(1-\alpha_*)S_i^{\mathrm{old}}+\alpha_*z.\label{eq:constant}
+\end{equation}
+Rankings are exactly preserved, while the numerical scale is compressed or shifted. A correlation of 1 therefore cannot by itself certify an innocuous change in score interpretation.
+
+A duplicate item behaves differently. When each duplicate's own response is subtracted to form its rest score, the other copies remain. This creates a direct relation between the item and its rest score even though copying did not add a new measurement. Positive Somers weighting can amplify the resulting redundancy. Excluding the focal item is insufficient to remove this local dependence.
+
+\section{Comparison with measurement models}
+A Rasch or other IRT analysis relates response probabilities to latent proficiency and item parameters under stated assumptions. A two-parameter logistic model, for example, uses $\operatorname{logit}\Pr(X_j=1\mid\theta)=a_j(\theta-b_j)$. The two-pad weight is not a fitted $a_j$, $b_j$ or information function. It does not supply a response-probability likelihood, a latent scale or conditional standard errors. Software such as \code{mirt} supports appropriate model-based comparisons, but those models require fit checks rather than automatic deference \citep{mirt}.
+
+A cognitive diagnosis model addresses mastery profiles tied to a Q-matrix. A content-weighted rubric starts from the desired importance of domains. The present method instead gives each item importance through empirical rarity and association with an unweighted rest composite. Which approach is preferable depends on the intended use and validation criterion. The proposal's absence of a latent model makes it easy to compute and audit; it does not make it assumption-free.
+
+\chapter{Stress-test design and implementation}\label{ch:design}
+\section{Three distinct uses of the persons}
+The full-sample fit uses all 2,922 persons and is descriptive. It summarizes how the proposed score would reweight this particular response matrix. It is not an out-of-sample validation fit.
+
+A reproducible random split allocates $\lfloor0.70\times2922\rfloor=2,045$ persons to calibration and the remaining 877 to audit. Weights are estimated from the calibration responses. The frozen reference score on the audit persons is $s_i^{(0)}=\sum_jx_{ij}\alpha_j^{(0)}$. Each perturbation generates alternative calibration weights and scores the same untouched audit responses, except for explicitly described item-addition or deletion scenarios. The comparison measures sensitivity to calibration changes.
+
+Five-fold person-level cross-fitting additionally fits weights on four folds and scores the fifth. This prevents each person's own responses from entering that person's calibration fit. Because each fold uses a different weight vector, pooled cross-fitted scores do not constitute one common fixed scoring scale. Within-fold comparisons are the safer diagnostic. Cross-fitting here addresses self-inclusion of persons; it does not validate the score against an external target.
+
+\section{Resampling and perturbation plan}
+Table~\ref{tab:design} summarizes the executed design. The original run used seed 20260901 and explicitly selected the Mersenne--Twister, Inversion and Rejection RNG settings. Its bootstrap and null draws are retained in \code{run_state.rds}. The supplementary experiment uses a separate seed, 20260902, and does not overwrite the primary outputs.
+
+\begin{longtblr}[caption={Executed experiments and their interpretation.},label={tab:design}]{width=\linewidth,colspec={X[1] X[1.4] X[1.6]},rowhead=1,row{1}={font=\bfseries,bg=lightblue},hlines}
+Experiment & Operation & What the comparison addresses \\
+Bootstrap & 500 samples of 2,045 calibration rows, with replacement & Calibration uncertainty conditional on the observed population and items. \\
+Calibration size & 100 draws at each of 50, 100, 250, 500, 1,000, 2,000 and 2,045; without replacement & Sensitivity relative to the same full calibration pool. \\
+Score-selected population & 100 samples of 500 rows from lower, upper and unselected calibration pools; with replacement & Transport sensitivity to raw-score selection; not demographic fairness. \\
+Response corruption & Four mechanisms, three requested rates, 100 replicates each & Consequences of altering calibration data while audit responses remain fixed. \\
+Column permutation & 500 independent within-column permutations; both rest and total mode & Positive association beyond marginal item success counts; direct self-inclusion effects. \\
+Delete an item & Each of the 28 items removed in turn & Combined content/denominator change and a separately computed recalibration effect. \\
+Append an item & Constants, independent random items, reverse key, one or five duplicates & Behavior under designed item-quality and redundancy failures. \\
+Replicate persons & 1, 2, 5, 10 or 20 copies of every calibration row & Dependence on nominal $n$ despite unchanged response information. \\
+Split halves & 100 random 14/14 partitions; each half calibrated separately & Descriptive internal consistency under varying item partitions. \\
+Supplementary null items & 1,000 independent items at each of four success probabilities & Repeatability of the rarity effect exposed by a single original draw. \\
+Supplementary regression & Three fitted transformations plus identity; calibration fit, audit evaluation & How well raw proportion summarizes the weighted score. \\
+\end{longtblr}
+
+Person bootstrapping follows the general resampling principle of \citet{efron}. Here it preserves each selected person's complete response vector and hence within-person item dependence. It assumes the observed persons are suitable resampling units; it does not reconstruct unobserved school clusters, survey strata or an unknown sampling frame. The percentile intervals are pointwise descriptions of calibration variation. They are not simultaneous confidence bands across all items or confidence intervals for a person's latent ability.
+
+\section{Metrics and tie conventions}
+For audit scores $s_i^{(b)}$ and the frozen reference $s_i^{(0)}$, the report uses
+\begin{equation}
+\RMSE_b=\sqrt{\frac1{877}\sum_i(s_i^{(b)}-s_i^{(0)})^2},\qquad
+\Delta_b=\frac1{877}\sum_i(s_i^{(b)}-s_i^{(0)}).
+\end{equation}
+Unless a table says otherwise, RMSE is in 0--1 score units. Multiplying by 100 converts it to score percentage points. A rank shift is different: it is measured on the distribution of persons' ranks, also in percentage points, and is labeled explicitly.
+
+Midrank percentiles are $(r_i-0.5)/N$, with average ranks for ties. Rank-shift summaries use absolute differences between these percentiles. For the top decile the program takes $k=\lceil0.10N\rceil$ and gives fractional membership to all people tied at the boundary, so total membership is exactly $k$. Overlap is the sum of pairwise minimum memberships divided by $k$. This avoids an arbitrary row-ID tie break; it is not a binary admission decision.
+
+Strict raw-score reversals count unordered person pairs with unequal raw totals whose weighted scores reverse that order. Weighted differences no larger than $10^{-12}$ are not treated as strict reversals. Pairs tied on the raw total are excluded from the denominator. Resolving such a tie is a different phenomenon from reversing an already ordered pair.
+
+The concentration statistic $J_{\mathrm{eff}}=1/\sum_j\alpha_j^2$ equals $J$ for equal weights and falls as shares concentrate. It is an effective \emph{weight-count} diagnostic. It does not count independent information: duplicate items can leave it relatively large while contributing little new content.
+
+\section{Permutation and split-half calculations}
+Column-wise permutation holds each item's correct count fixed and destroys the alignment of responses across items. For each item, the one-sided Monte Carlo tail probability is
+\begin{equation}
+\widehat p_j=\frac{1+\#\{b:D_j^{(b)}\ge D_j^{\mathrm{obs}}\}}{B+1}.
+\end{equation}
+The plus-one rule avoids impossible zero Monte Carlo probabilities \citep{phipson}. Benjamini--Hochberg adjustment is applied separately to the 28 rest-score and 28 total-score results \citep{bh}. The shared-item tests are dependent; the adjustment should not be presented as a proof that arbitrary dependence assumptions are satisfied. The primary null is loss of cross-item structure, not the composite's superiority over raw scoring.
+
+For a split into halves $A$ and $B$, separate calibration fits produce two audit-half scores. Their Pearson correlation $r$ is transformed to $2r/(1+r)$, as is the correlation between the two raw half totals. The paired difference compares the two corrections for the same split. The Spearman--Brown interpretation depends on appropriate relationships between the halves. A multidimensional grammar test and random partitions are not guaranteed parallel forms. Reliability itself depends on which sources of error and replication are intended \citep{revelle}.
+
+\section{Software checks and what they establish}
+The normal program run first executes 120 small exhaustive comparisons of direct cross-group pair enumeration against the implemented concordance and average-rank identity, plus tests for ties, constants, reversal, ordering, normalization and invalid inputs. The user's recorded run also passed the optional comparison to \code{Hmisc}. Earlier local verification in this project compared 174 cases with the pinned source; maximum absolute discrepancies were approximately $1.7\times10^{-15}$ for concordance and $4.5\times10^{-15}$ for raw weights, consistent with floating-point arithmetic.
+
+These checks validate implementation consistency. They cannot establish that the chosen formula is optimal, unbiased, fair or substantively appropriate. The source bundle retains the program and verification record so that a reviewer can inspect exactly what was checked.
+
+\chapter{Results on the unmodified ECPE matrix}\label{ch:baseline}
+\section{Weights, scores and response-pattern distinctions}
+Item12 receives the largest full-sample share, 5.5276\%, followed by Item20 at 5.1869\% and Item27 at 4.6761\%. Item02 has the smallest share, 2.7202\%. Operational weights range from 1 to 2.0321, and $J_{\mathrm{eff}}=27.081$. All item-rest $D$ values are positive, ranging from 0.2486 to 0.5124. There are no constant or very-small-group items in this baseline.
+
+Item12 illustrates the complete calculation with real data. It has 1,266 correct responses out of 2,922, giving $p=0.433265$, $C=0.756219$, $D=A=0.512438$, $u=0.433459$ and $v=0.487737$. Its factors are $F_1=1.835959$ and $F_2=1.717978$, producing $w=3.154137$. The minimum raw weight is 1.552159, so its displayed operational weight is 2.032097. Division by the sum of all raw weights gives its 5.5276\% score share. Appendix~\ref{app:tables} lists all 28 items.
+
+\fig{baseline}{Full-sample descriptive scoring. The left panel shows weighted scores at each raw total, their within-total mean and the raw-proportion identity. The right panel shows fitted item shares against success proportions; the dashed line is the equal-weight share of $1/28$. Color in the right panel represents item-rest $D$.}{fig:baseline}
+
+The weighted/raw Pearson correlation is 0.99594 and the Spearman correlation is 0.99577. Their score RMSE is 0.02733, and weighted scores average 0.02115 lower than raw proportions. These differences are descriptive consequences of reweighting; raw scores are not being treated as a known truth. Maximum absolute score difference is 0.06244. The resulting 2,690 distinct numerical weighted scores match the number of distinct response patterns in these data, compared with 24 observed raw totals. More numerical distinctions do not establish more reliable distinctions.
+
+\begin{table}[H]\centering
+\caption{Full-sample score comparisons; the reference is the raw proportion.}
+\begin{tblr}{colspec={l r},row{1}={font=\bfseries,bg=lightblue},hlines}
+Metric & Value \\
+Pearson correlation & 0.995937 \\
+Spearman correlation & 0.995772 \\
+Score RMSE & 0.027328 \\
+Mean weighted minus raw score & $-0.021148$ \\
+95th percentile absolute rank shift & 5.458 pp \\
+Maximum absolute rank shift & 11.294 pp \\
+Fractional top-decile overlap & 89.06\% \\
+Strict reversals / unequal-raw pairs & 20,944 / 4,006,254 \\
+Strict reversal fraction & 0.5228\% \\
+\end{tblr}
+\end{table}
+\sourcefile{data/full_weighted_vs_raw.csv; data/raw_score_reversals.csv}
+
+\section{A concrete raw-score reversal}
+Person-row 1799 answers 14 items correctly and obtains a weighted score of 0.522358. Person-row 518 answers 16 correctly and obtains 0.513857. The lower raw total therefore receives the higher weighted score. Exhaustive comparison of observed totals shows that two items is the largest raw-total gap participating in a strict reversal in these data. This is a derived illustration from the supplied scores, not a judgment about which person has higher true proficiency.
+
+Within a single raw total, the largest observed span between minimum and maximum weighted scores is 0.08837. Such differences are the intended result of allocating different importance to items. Whether they improve decisions requires information about content relevance and measurement error that is not supplied by the same weighted score.
+
+\section{Cross-fitting and self-inclusion}
+Within the five cross-fitting folds, weighted/raw Spearman correlations range from 0.99471 to 0.99644. The broad resemblance to raw scoring therefore persists when the scored person's responses are excluded from weight calibration. The fold comparisons still compare two scores derived from the same item responses, so they are not independent validity coefficients.
+
+Across all persons, changing the item reference from rest score to total score increases mean item $D$ from 0.39021 to 0.49723, a mean increase of 0.10702. This difference includes the direct contribution of the item to its own total score. The null experiment in Chapter~\ref{ch:null} isolates why that inclusion matters. Removing the focal item is a defensible default; the classical literature has long recognized the self-overlap problem in item-total analysis \citep{henrysson}.
+
+\chapter{Calibration stability and population sensitivity}
+\section{Bootstrap uncertainty on the fixed audit sample}
+The calibration bootstrap is favorable for the unmodified ECPE item set. Median audit RMSE against the frozen reference is 0.002372, or 0.2372 score percentage points. Across the 500 draws, its 2.5th and 97.5th percentiles are 0.001711 and 0.003555. Median 95th-percentile rank movement is 0.9122 rank percentage points, with a corresponding across-draw interval of 0.6842 to 1.1403. The median top-decile overlap is 98.864\%.
+
+\fig{bootstrap_weights}{Item-share estimates from the fixed calibration sample, with pointwise 2.5th--97.5th bootstrap percentile intervals from 500 person resamples. The horizontal line is $1/28$. These intervals concern estimated shares under calibration resampling; they do not express uncertainty in a candidate's true proficiency.}{fig:boot}
+
+The reference weight vector is estimated from 2,045 persons, so its Item12 share (5.4383\%) differs slightly from the full-sample share in Chapter~\ref{ch:baseline}. Keeping the two fits separate avoids apparent contradictions between the main item table and the bootstrap table. A fresh independent calibration population could differ in ways that resampling the original persons does not reproduce.
+
+The top-decile results also answer a different question from the 89.06\% weighted/raw overlap in the previous chapter. The former compares alternative estimates of the \emph{same weighted rule}; the latter compares \emph{different scoring rules}. Both can hold simultaneously.
+
+\section{Smaller calibration samples}
+\begin{table}[H]\centering
+\caption{Median sensitivity to calibration size over 100 draws per size.}\label{tab:size}
+\begin{tblr}{colspec={r r r r},row{1}={font=\bfseries,bg=lightblue},hlines}
+Calibration $n$ & Audit RMSE & 95th rank shift (pp) & Top-decile overlap \\
+50 & 0.016086 & 5.131 & 94.89\% \\
+100 & 0.010677 & 3.535 & 96.59\% \\
+250 & 0.006575 & 2.281 & 97.73\% \\
+500 & 0.004163 & 1.482 & 98.86\% \\
+1,000 & 0.002408 & 0.912 & 98.86\% \\
+2,000 & 0.000371 & 0.228 & 100.00\% \\
+2,045 & 0 & 0 & 100.00\% \\
+\end{tblr}
+\end{table}
+\sourcefile{data/sample_size_summary.csv}
+
+\fig{sample_size}{Calibration-size sensitivity relative to the original 2,045-person fit. Boxes summarize repeated draws without replacement from the same pool. The 2,045-person condition reproduces that pool exactly; its zero difference is mechanical. The 2,000-person condition also benefits from near-complete overlap.}{fig:size}
+
+Smaller calibration samples create noticeably more variation. However, this is not a study of independent new samples drawn at each size. The diminishing difference near 2,045 partly follows from increasing overlap with the reference pool. It would be incorrect to turn Table~\ref{tab:size} directly into a universal recommendation that a particular number of candidates guarantees a given accuracy. A sample-size study for deployment should draw independent calibration populations or use an explicit generative design with known targets.
+
+\section{Changing the calibration population by score selection}
+The lower and upper pools consist of persons at or below the calibration 30th percentile and at or above its 70th percentile in raw score, including boundary ties. Each condition samples 500 persons with replacement, so it combines changed composition with resampling variation.
+
+\begin{table}[H]\centering
+\caption{Median effects of raw-score-selected calibration populations.}
+\begin{tblr}{colspec={l r r r r},row{1}={font=\bfseries,bg=lightblue},hlines}
+Calibration pool & RMSE & Mean change & Spearman & 95th shift (pp) \\
+Lower-score & 0.008206 & $-0.005988$ & 0.999507 & 1.938 \\
+Unselected & 0.004987 & $+0.000314$ & 0.999597 & 1.710 \\
+Upper-score & 0.016965 & $+0.011521$ & 0.997963 & 3.877 \\
+\end{tblr}
+\end{table}
+\sourcefile{data/population_shift_summary.csv}
+
+Upper-score calibration shifts scores more than lower-score calibration in this design. Conditioning on a composite total changes both success proportions and item-rest relationships; it is not merely a change in the number of available people. This experiment tests sensitivity to an intentionally selected population. It supplies no demographic group labels and therefore is not evidence of differential item functioning or its absence.
+
+Operationally, the result favors specifying a calibration population and freezing the weights for the intended cohort. Recomputing weights separately in each classroom or examination group can change what an identical response pattern earns. Frozen weights improve common-scale interpretation within a fixed form; they do not automatically solve transport across forms or years.
+
+\section{Response corruption in calibration only}
+Cell flips change a selected fraction of matrix entries from 0 to 1 or from 1 to 0. Other conditions replace a selected fraction of persons' entire response vectors with independent Bernoulli(0.5), all-zero or all-one vectors. The requested person replacement rate is not identical to the fraction of cells actually changed, since some replacements agree with existing responses. The program records actual changed-cell fractions separately.
+
+\begin{table}[H]\centering
+\caption{Median audit score RMSE after calibration corruption.}
+\begin{tblr}{colspec={l r r r},row{1}={font=\bfseries,bg=lightblue},hlines}
+Mechanism & 1\% requested & 5\% requested & 10\% requested \\
+Cell flips & 0.000872 & 0.002341 & 0.003709 \\
+Random response rows & 0.001389 & 0.006205 & 0.011350 \\
+All-zero rows & 0.002301 & 0.009603 & 0.015451 \\
+All-one rows & 0.000246 & 0.000624 & 0.000958 \\
+\end{tblr}
+\end{table}
+\sourcefile{data/contamination_summary.csv}
+
+\fig{corruption}{Calibration corruption with original audit responses fixed. Lines are medians; shaded regions span the 2.5th--97.5th percentiles over 100 replicates. Mechanisms act on different units, so equal requested percentages are not equal amounts of changed information.}{fig:corruption}
+
+All-zero row replacement produces the largest median changes among these conditions; all-one replacement produces the smallest. This asymmetry is consistent with a rule that explicitly depends on how rare correct answers are, although the experiment alters both rarity and association and does not isolate a single causal component. A 50\% random-success probability is a specified artificial condition, not an estimate of how ECPE candidates guess.
+
+\chapter{Null structure, reliability and adversarial items}\label{ch:null}
+\section{Why the rest-score default matters}
+After independently permuting each item column, mean item-rest $D$ averaged over replicates is 0.000682. Mean item-total $D$ is 0.245911. The corresponding mean discrimination factors are 1.012711 and 1.282847. The rest-score null is close to zero in $D$ but still has a factor above one because of truncation and transformation. The total-score null retains a large self-inclusion effect even though cross-item alignment was destroyed.
+
+All 28 observed item-rest statistics exceed their 500 null replicates, giving one-sided probabilities $1/501=0.001996$ and the same reported BH-adjusted values. The finite simulation resolution matters: the result is not $p=0$. It supports positive cross-item structure in the original responses under this randomization null. It does not show that the proposed weights extract that structure optimally or predict an external outcome better than equal weights.
+
+\fig{null_reliability}{Two distinct diagnostics. Left: mean item $D$ under the independent-column null, comparing rest and total reference scores. Right: paired weighted-minus-raw Spearman--Brown corrections for 100 random split halves. The null reference effect is substantial; the split-half difference is small and changes sign across partitions.}{fig:nullrel}
+
+\section{The split-half comparison offers little evidence of gain}
+Median corrected split-half correlation is 0.784384 for raw scores and 0.785045 for weighted scores. The median \emph{paired} difference is 0.000905; it is not obtained by subtracting the two marginal medians. Across splits, the 2.5th--97.5th percentile range of paired differences is approximately $[-0.00417,0.00725]$. Sixty of the 100 splits favor weighting.
+
+These splits reuse the same people and items and are not 100 independent replications of a study. Their percentile spread is descriptive, not a confidence interval proving a reliability improvement. The half-tests are also newly calibrated scoring rules: the experiment does not directly estimate test--retest reliability of the frozen full 28-item score. The defensible conclusion is that this particular internal-consistency diagnostic is very similar for the two scoring approaches.
+
+\section{Constants, random items and reverse scoring}
+The original augmentation test generates one realization per synthetic scenario. It appends corresponding columns to calibration and audit data, re-estimates all weights on calibration, and compares the resulting audit score with the original 28-item score. The copied or reversed source item is Item12, selected as the largest calibration share.
+
+\begin{table}[H]\centering
+\caption{Original item-augmentation stress tests. Added share is combined across added columns.}\label{tab:augment}
+\begin{tblr}{colspec={l r r r r},row{1}={font=\bfseries,bg=lightblue},hlines}
+Added item(s) & Share \% & RMSE & Spearman & 95th rank shift (pp) \\
+All zero & 13.189 & 0.093109 & 1.000000 & 0 \\
+All one & 1.731 & 0.006233 & 1.000000 & 0 \\
+Random 1\% & 10.351 & 0.072742 & 0.997298 & 0.456 \\
+Random 50\% & 2.978 & 0.016739 & 0.996020 & 3.649 \\
+Reversed Item12 & 2.723 & 0.019211 & 0.995744 & 5.131 \\
+One Item12 duplicate & 5.804 & 0.032119 & 0.988281 & 9.692 \\
+Five Item12 duplicates & 32.698 & 0.175538 & 0.911785 & 28.985 \\
+\end{tblr}
+\end{table}
+\sourcefile{data/augmented_item_stress.csv; data/augmented_item_weights.csv}
+
+\fig{augmentation}{The original synthetic-item scenarios change both test composition and score normalization. Left: denominator share allocated to added columns. Right: total score difference from the original audit reference. These differences are not solely calibration-estimation error.}{fig:augment}
+
+At $n=2,045$, the all-zero item's raw weight is $1+\ln(2046)=8.623642$. It receives 13.1887\% of the score total although nobody can earn that share in this augmented dataset. Equation~\eqref{eq:constant} gives $S^{\mathrm{new}}=0.86811255S^{\mathrm{old}}$. The average drop is 0.090262. Both Pearson and Spearman correlations remain exactly one, demonstrating why rank-only checks miss a scale problem. An all-one item shifts and compresses scores in the opposite affine form.
+
+The single 1\% random item has 20 correct calibration responses, empirical $D=0.160420$, $F_1=5.57912$ and $F_2=1.17476$. Its 10.35\% share reflects a strong rarity term plus chance positive association. Although its 95th-percentile rank shift is only 0.456 percentage points, the maximum is 22.919 points. A rare event can affect a small minority markedly while a 95th-percentile summary looks modest.
+
+The reversed item has $D=-0.603759$, receives no positive discrimination reward and still retains a 2.72\% share. This is exactly the stipulated rule. It illustrates why clipping negative association to a neutral multiplier should not be described as excluding defective items.
+
+\section{Duplication and apparent information}
+One added copy of Item12 has $D=0.603759$, while each member of the six-item set consisting of the original and five copies has $D=0.877408$ in the five-copy scenario. The five added columns take 32.6979\% of the total weight. Including their original, the repeated response pattern takes 39.2375\%. Audit Spearman correlation with the original score falls to 0.911785, and maximum rank movement reaches 52.109 percentage points.
+
+Copies are mechanically more predictable from their rest scores because their twins remain there. The increase in association is not new evidence about proficiency. The effective weight count remains about 25.19 in the five-copy scenario, which underscores that this concentration measure is not an effective number of independent questions. A content or dependence audit is needed in addition to inspecting individual shares.
+
+\section{Supplementary repeated independent-item experiment}\label{sec:newnull}
+The single rare-item draw was informative but could have been unusually extreme. A new report analysis therefore repeatedly appended an independent Bernoulli item to the same fixed 2,045-person calibration matrix. For each of $p=0.001,0.01,0.05,0.50$, 1,000 independent columns were generated. All original and appended weights were refitted. These simulations are conditional on the observed ECPE calibration matrix and were designed after inspecting the original stress results; they are not a preregistered independent validation study.
+
+\begin{table}[H]\centering
+\caption{New independent-item simulations: calibration weight allocation.}\label{tab:nullnew}
+\begin{tblr}{colspec={r r r r r r},row{1}={font=\bfseries,bg=lightblue},hlines}
+True $p$ & Expected correct & Median share \% & 2.5th--97.5th \% & Largest item & Constant \\
+0.001 & 2.045 & 12.259 & 10.800--31.621 & 1,000/1,000 & 12.0\% \\
+0.010 & 20.450 & 9.181 & 8.428--11.723 & 1,000/1,000 & 0\% \\
+0.050 & 102.250 & 6.666 & 6.338--7.389 & 1,000/1,000 & 0\% \\
+0.500 & 1,022.500 & 2.926 & 2.845--3.061 & 0/1,000 & 0\% \\
+\end{tblr}
+\end{table}
+\sourcefile{supplementary/null_item_summary.csv; supplementary/null_item_replicates.csv}
+
+\fig{null_added}{New simulations of independent appended items. Each condition has 1,000 calibration fits. Left: item-share distributions (outliers omitted from boxplot display only). Right: empirical cumulative distributions retain the long upper tail at 0.1\% success. No audit responses or external outcomes are simulated in this supplementary experiment.}{fig:newnull}
+
+For every replicate at 0.1\%, 1\% and 5\%, the independent item receives a larger individual weight than any of the original ECPE items in that augmented fit. This is an empirical all-success result over the specified simulations, not a proof about every possible dataset or future realization. At 1\%, median share is 9.18\%; at 5\%, it is 6.67\%. The 0.1\% condition is especially variable because there are usually very few correct responses and some columns are constant.
+
+Nonconstant items have positive empirical $D$ in approximately 47--52\% of draws, consistent with random direction rather than a systematic positive latent relationship. But even $A=0$ leaves the entire rarity factor. For an intuition using the large-$n$ approximation, an independent item with $p=0.01$ and $A=0$ has weight approximately $1-\ln(0.01)=5.605$, whereas the largest full-sample ECPE raw weight is about 3.154. This comparison explains why positive association is not necessary for a rare null item to become influential.
+
+The finding is conditional but structural: the rule deliberately rewards rarity even when discrimination is neutral. An item can therefore receive a high weight because it is hard for irrelevant reasons, keyed incorrectly or simply independent of the construct. The appropriate response is to specify how item quality and content enter the scoring policy, then validate that policy; a favorable bootstrap of the original, well-behaved item set cannot resolve this issue.
+
+\section{Deleting items and replicating people}
+Deleting an item changes the content, normalization and reference rest scores of the remaining items. The program separates total score change from a recalibration-only comparison: remaining original shares are first renormalized, and that fixed deletion score is compared with a fresh fit on the shortened test. The largest recalibration-only RMSE is 0.000649 for deleting Item12, compared with total RMSE 0.028408. Corresponding values are 0.000630 versus 0.019911 for Item24 and 0.000596 versus 0.027525 for Item20. Much of the overall difference therefore comes from removing the item and its score contribution rather than from unstable estimation of the remaining weights.
+
+Duplicating every calibration row 2, 5, 10 or 20 times leaves all $D$ values exactly unchanged in the saved results. Audit RMSE nevertheless rises from zero to approximately $8.94\times10^{-6}$, $1.43\times10^{-5}$, $1.61\times10^{-5}$ and $1.70\times10^{-5}$. These effects are very small here, but they confirm the explicit sample-size dependence derived earlier. Row replication is a mathematical diagnostic, not a way to increase effective sample size.
+
+\chapter{A constrained quadratic description of the score}\label{ch:regression}
+\section{Purpose and explicit constraints}
+Earlier project discussion requested a constrained quadratic comparison between raw and weighted scores. The following analysis supplies one fully specified version. It is a new supplementary calculation for this report, not a claim that these were the only possible constraints contemplated earlier.
+
+Let $q_i=T_i/28$ and let $s_i$ be the score under the frozen 2,045-person calibration weight vector. We fit
+\begin{equation}
+ f(q;\kappa)=q+\kappa q(1-q),\qquad -1\le\kappa\le1.\label{eq:reg}
+\end{equation}
+This forces $f(0)=0$ and $f(1)=1$. Since $f'(q)=1+\kappa(1-2q)$, the bound on $\kappa$ ensures monotonicity throughout $[0,1]$ and hence keeps fitted values within that interval. It is a one-parameter quadratic family, not an arbitrary unconstrained second-degree polynomial.
+
+Writing $z_i=q_i(1-q_i)$, the least-squares solution before enforcing the bound is
+\begin{equation}
+ \widetilde\kappa=\frac{\sum_{i\in\mathrm{cal}}z_i(s_i-q_i)}{\sum_{i\in\mathrm{cal}}z_i^2},\qquad
+ \widehat\kappa=\min(1,\max(-1,\widetilde\kappa)).
+\end{equation}
+The fitted value is $\widehat\kappa=-0.121153661$, already inside the constraint. Thus
+\begin{equation}
+ \widehat f(q)=0.878846339q+0.121153661q^2.
+\end{equation}
+The negative $\kappa$ describes the average downward displacement of weighted scores relative to raw proportion between the endpoints. It does not mean that each individual weighted score lies below the identity line.
+
+\section{Audit comparison}
+For context, the same calibration sample fits an ordinary line and an unconstrained quadratic. All three models are evaluated against frozen-weight scores of the 877 audit persons; the identity $f(q)=q$ is also evaluated. The reported $R^2$ is $1-\mathrm{SSE}/\mathrm{SST}$ on the audit outcomes, not the square of a correlation.
+
+\begin{table}[H]\centering
+\caption{Supplementary transformations of raw proportion; audit evaluation.}
+\begin{tblr}{colspec={l r r r},row{1}={font=\bfseries,bg=lightblue},hlines}
+Transformation & RMSE & MAE & Audit $R^2$ \\
+Identity (raw proportion) & 0.028222 & 0.023595 & 0.973462 \\
+Ordinary line & 0.015989 & 0.012905 & 0.991481 \\
+Ordinary quadratic & 0.014852 & 0.011829 & 0.992650 \\
+Endpoint-monotone quadratic & 0.014887 & 0.011842 & 0.992615 \\
+\end{tblr}
+\end{table}
+\sourcefile{supplementary/regression_comparison.csv; supplementary/regression_coefficients.csv}
+
+The fitted line is $-0.0560081+1.0487770q$. The unconstrained quadratic is $0.00267047+0.86610328q+0.13369553q^2$. Their extra flexibility is useful as a descriptive comparison, but the line is not endpoint-preserving and produces negative predictions near zero. The constrained curve has almost the same audit error as the ordinary quadratic while respecting its stated bounds.
+
+\fig{regression}{Supplementary audit predictions under the constrained quadratic. The right panel displays residual variation among persons with the same raw proportion. That variation is structurally unrecoverable from raw total alone when the weighted rule assigns different scores to different response patterns.}{fig:reg}
+
+\section{What the curve establishes}
+The constrained quadratic summarizes much of the deterministic relationship between raw and weighted scores on this form. It cannot reproduce every person's score because $q$ discards which particular items were correct. A strictly increasing transformation of raw total also preserves raw ordering and raw ties, so it cannot reproduce the weighted rule's raw-score reversals or within-total distinctions.
+
+The outcome being predicted is the proposed weighted score itself. A high audit $R^2$ therefore indicates a compact approximation to that score, not accuracy against true proficiency. If the intended use only requires a transformed raw score, this result raises a practical question about whether the extra response-pattern distinctions are worthwhile. Answering it requires independent evidence about their reliability or utility. The report does not replace the user's scoring rule with the curve.
+
+\chapter{What ECPE adds to the earlier PISA project}
+\section{The previous evidence, kept in its original scope}
+The earlier report analyzed a 4,978-by-76 dichotomized PISA mathematics resource with rotated administration patterns. Its largest complete response-pattern group contained 435 persons and 32 items. It reported operational weights from 1 to 8.621, weighted/raw Pearson correlation 0.987195, and 1,449 reversals among 90,594 unequal-raw-score pairs, approximately 1.60\% \citep{oldreport}. These numbers are historical results transcribed from the supplied report; the underlying PISA computations were not rerun for the present study.
+
+The earlier extreme-item case was PM995Q02. In that 435-person group, eight persons answered correctly, $D$ was approximately 0.8914, raw weight was 15.624 and operational weight was 8.621. The reported 50,000-replicate bootstrap interval for raw weight was approximately 12.87--21.39, while the item remained the largest operational weight in 99.974\% of draws. A stable first-place rank did not imply a precisely known magnitude.
+
+The response-pattern analysis extended to 13 large groups covering 4,948 persons, with each of the 76 items occurring in four groups. The old report gave a mean raw-weight coefficient of variation of 10.52\% and median 9.83\%; six items exceeded 20\%. PM943Q02 varied particularly strongly, with reported raw weights approximately 9.45--18.90 and CV 27.77\%. The supplied stability script also supports common-rest comparisons across groups containing an item \citep{pisascript}. Those groups are reconstructed from response availability patterns; they should not be represented as externally verified randomized booklet assignments without further documentation.
+
+\section{A comparison of the two test beds}
+\begin{longtblr}[caption={Historical PISA findings and current ECPE findings.}]{width=\linewidth,colspec={X[1.2] X X},rowhead=1,row{1}={font=\bfseries,bg=lightblue},hlines}
+Feature & Earlier PISA report & Present ECPE analysis \\
+Input matrix & 4,978 by 76; structural missingness & 2,922 by 28; complete binary \\
+Principal descriptive fit & 435 persons, 32 items & 2,922 persons, 28 items \\
+Fixed calibration/audit experiment & Not the primary reported design & 2,045 calibration, 877 audit \\
+Largest operational weight & 8.621 & 2.032 \\
+Raw/weighted Pearson correlation & 0.987195 & 0.995937 \\
+Strict unequal-raw reversal fraction & Approximately 1.60\% & 0.5228\% \\
+Most extreme highlighted item & PM995Q02: 8/435 correct & Item12: 1,266/2,922 correct \\
+Main natural stress & Very rare items; changing rest composition & Same-form calibration resampling \\
+Additional structural stress & Extreme association magnified by logs & Constants, independent rare items, duplicates \\
+Validated superiority & Not established & Not established \\
+\end{longtblr}
+
+The comparison suggests that the current rule behaves much more gently on the ordinary ECPE items than on the extreme PISA example. This is not a controlled comparison of tests: content, item count, sample size, success proportions and missing-data design differ. Both correlations in the table are Pearson coefficients; the ECPE Spearman value is reported separately to avoid comparing different statistics without saying so.
+
+ECPE removes the rotated-form complication from the primary analysis and supplies many more persons per item. It therefore strengthens the case for examining calibration stability on a fixed form. It does not test how the rule handles omitted versus not-reached responses in PISA, recover discarded partial credit, account for survey sampling or equate different forms. Those earlier limitations remain attached to the earlier evidence.
+
+\section{Response to the project's methodological review}
+The project review asked for clearer distinction between computational correctness and psychometric validity, less emphasis on numerical granularity, person-level consequences of uncertain weights, out-of-sample calibration, simpler comparators and tests of extreme items \citep{projectreview}. The present study addresses several of these points: a fixed audit sample, person-bootstrap score variation, cross-fitting, raw-score comparisons, a split-half diagnostic, complete edge-case tests and a repeated independent-item simulation are now explicit.
+
+Other requests remain open. There is still no external proficiency criterion, no fitted Rasch/2PL or cognitive-diagnosis comparison, no demographic fairness study and no known-ability Monte Carlo benchmark. The additional quadratic approximates the proposed score; it is not a substitute for those missing comparisons. The report also treats the similarity to smoothed inverse-frequency weighting and prior Somers item analysis as concrete related work, rather than relying on a broad claim that the exact combination appears novel.
+
+\chapter{Assessment and a validation path}
+\section{Claims supported by the present evidence}
+The system is fully specified and inexpensive to compute on a complete binary form. Independent pair, rank and source comparisons support faithful implementation. Fixed-weight scores have transparent item contributions and simple bounds. The item-rest default reduces the direct self-inclusion distortion visible under permutation. The original ECPE item weights are modestly dispersed and stable under bootstrap resampling of a fairly large calibration sample. Raw-score ordering is mostly retained, with measurable exceptions.
+
+Those are useful results for a research prototype. They establish that the system can be studied precisely rather than only described informally. The source, exact settings and all numerical tables permit independent examination of both its favorable and unfavorable behavior.
+
+\section{Claims not established}
+No analysis here shows that weighted scores are closer to true language proficiency, better at predicting future performance, more equitable across groups or suitable for an official pass/fail decision. High correlation with raw score is evidence of similarity; it is not proof of improvement. Near-unique numerical scores do not establish additional measurement precision. Positive item-rest association measures agreement with the rest composite and can be influenced by content redundancy, multidimensionality and population selection.
+
+The modest split-half difference does not provide persuasive evidence of a reliability gain. The independent rare-item and duplicate-item experiments reveal failures that should be resolved before consequential scoring is contemplated. Neither the ECPE evidence nor the earlier PISA study supplies a passing standard or an equating relationship to an existing certification scale.
+
+\section{Changes to evaluate, not silently implement}
+The following are proposals for comparison, not descriptions of the submitted formula. Any adopted revision should receive a new version identifier and be evaluated against the frozen current version.
+
+\begin{enumerate}
+\item \textbf{Specify the scoring purpose and item-quality policy.} Decide whether a high weight should reward rarity, diagnostic information, content importance or expected decision benefit. Define the treatment of constants, reversed keys and items with weak or negative association. Removing constants from the scored denominator is one candidate policy, but it changes the current rule.
+\item \textbf{Test regularization and ablations.} Compare equal weights, rarity-only weights, a discrimination-only or simpler positive-$D$ rule, and the full product. Evaluate shrinkage of $D$, caps on item or content-cluster shares, and alternative transformations under one prespecified criterion. These alternatives should be compared on held-out outcomes rather than selected for favorable agreement with the current score.
+\item \textbf{Protect content coverage and local independence.} Identify duplicates and strongly dependent item clusters. Consider constraints on domain or cluster shares, using the Q-matrix as a starting audit rather than as unquestioned ground truth. A leave-cluster-out reference is a possible sensitivity analysis where item families share information.
+\item \textbf{Freeze a calibration policy.} Choose a defensible population, retain the exact fit and version, and score a subsequent cohort without recalibration. Evaluate drift before changing weights. A change of form requires linking or equating evidence; a common 0--1 range alone does not supply it.
+\item \textbf{Evaluate genuinely independent targets.} Use an external criterion or a simulation with known proficiency, several plausible response models, multidimensional structure, local dependence, rare items and response omissions. Compare rank recovery, calibration, error and decision consequences. Obtain uncertainty intervals by resampling the relevant independent units.
+\end{enumerate}
+
+\section{A concrete next empirical study}
+A useful next design would reserve a new cohort or dataset for a final comparison that is not used to choose transformations. On the development portion, fit the current rule and the simpler ablations alongside suitable IRT and Q-matrix models. Prespecify an external outcome or known simulation target and a primary loss before inspecting results. If the goal is a decision at a threshold, report classification changes and their uncertainty near that threshold, with an explicitly justified standard.
+
+For a simulation, vary calibration size, item success rates, discriminations, skill correlations and redundant item clusters. Include independent rare items by construction. Compare each score with the known latent target and examine whether a nominal improvement survives changes in the generating model. A rule designed to reward difficult correct responses may perform differently under unidimensional, multidimensional and speeded conditions. Reporting that dependence is more informative than searching for a single favorable setting.
+
+Demographic fairness requires suitable group variables, a defensible construct and comparisons conditional on proficiency or another justified reference. The current raw-score selection experiment does not supply those ingredients. Official certification use additionally requires evidence specific to the intended population, content and decision standard; this report makes no such operational recommendation.
+
+\section{Conclusion}
+The ECPE analysis supports a transparent, reproducible scoring prototype with stable calibration on this particular well-behaved 28-item dataset. Its mathematical structure also explains why an irrelevant rare item can receive the largest weight and why duplicated content can become dominant. The next substantive advance is to establish a defensible item-quality and validation policy, then show that the resulting score improves an independently defined measurement objective. Additional resampling of the same favorable item set cannot by itself answer that question.
+
+\chapter{Reproducibility and source package}\label{ch:reproduce}
+\section{Original run and supplementary environment}
+The supplied primary run reports R 4.6.1, Fedora Linux 44 in Toolbx, \code{edmdata} 1.3.0 and \code{Hmisc} 5.2-6, with FlexiBLAS/OpenBLAS-OPENMP. It completed on 1 September 2026 at 20:36:43 UTC and recorded about 39.4 seconds elapsed. These are the user's run records, not timing claims for another machine. The program's own completion message and output manifest establish that the second command shown in the user's terminal transcript succeeded.
+
+The initial missing-file error came from using \code{ecpe_scoring_stress_test.R} when the local filename had a lowercase \code{.r}. Linux filenames are case-sensitive. The later successful run used the actual filename. The RTC/local-time warning in the terminal transcript is a host configuration warning; the submitted results do not indicate a scoring failure arising from it.
+
+The report's supplementary R calculations ran in a separate R 4.3.3 environment using the saved response CSVs and split IDs. Their session information is stored separately. The primary user outputs were not regenerated or substituted with the supplementary environment's results. Python generated the report figures and tables from the supplied CSVs; XeLaTeX compiled the document. Exact build versions are recorded in \code{build_environment.txt}.
+
+\section{How to reproduce}
+From the source-bundle root, a standard installation can run:
+\begin{lstlisting}[language=bash,numbers=none]
+Rscript -e 'install.packages("edmdata", repos="https://cloud.r-project.org")'
+Rscript code/ecpe_scoring_stress_test.R --out fresh_ecpe_results
+Rscript code/ecpe_supplementary.R
+python3 code/build_figures.py
+latexmk -xelatex -interaction=nonstopmode -halt-on-error ECPE_scoring_report.tex
+\end{lstlisting}
+The first script requires a new or empty output directory and will refuse a nonempty one. The supplemental script uses \code{data/run_state.rds} to preserve the exact original split; it writes only its supplementary outputs. Reproducing the primary experiment on another R or BLAS version may yield tiny floating-point differences. All substantive figures in this report are generated from the submitted primary outputs or the separately labeled supplementary files, not from a new primary run on a different host.
+
+The source package includes the complete stress-test program, the pinned scoring-source snapshot, the supplementary R script, Python figure/table builder, response and Q-matrix CSVs, numerical outputs, the original run state, references, this XeLaTeX source and vector figures. It also includes the historical verification CSV and a SHA-256 manifest for the source package's files. The old report and full external papers are referenced rather than reproduced as part of the new document.
+
+\section{What reproducibility does not settle}
+A reproducible result can still be a poor measurement decision. The package makes it possible to audit the formula, trace a table to a file and rerun the specified experiments. It does not independently verify the original ECPE sampling frame, recover unprovided item text, certify the Q-matrix, validate the latent construct or transfer the score to an official reporting scale. Those questions require evidence beyond code and numerical consistency.
+
+\clearpage
+\phantomsection
+\addcontentsline{toc}{chapter}{Bibliography}
+\bibliographystyle{plainnat}
+\bibliography{references}
+\appendix
+
+\chapter{Complete numerical tables}\label{app:tables}
+\section{Full-sample item weights and Q-matrix}
+The table below uses all 2,922 persons. Q codes are ordered morphosyntactic, cohesive, lexical. $p$ is the observed success proportion; $D$ is item-rest Somers' $D$; $F_1$ and $F_2$ are the rarity and discrimination factors. Share is $100w/\sum w$. Values are rounded for printing; the CSVs retain numerical precision.
+{\small\input{tables/complete_item_weights.tex}}
+\section{Calibration bootstrap share intervals}
+These estimates use the 2,045-person calibration fit and 500 person resamples. They therefore differ legitimately from the full-sample table above. Percentiles are pointwise bootstrap summaries.
+{\small\input{tables/bootstrap_share_intervals.tex}}
+\clearpage
+\section{Weighted scores within observed raw totals}
+The table uses the full-sample fit. Repeated response patterns share the same score. A missing sample standard deviation would be shown as a dash for a one-person group.
+{\small\input{tables/scores_by_raw_total.tex}}
+
+\chapter{Source audit and provenance}\label{app:sources}
+\section{Primary empirical files}
+The response CSV's supplied MD5 is \code{f23198ed5a70a419bd41cc258775a832}; the Q-matrix CSV's is \code{61edc8835397e9e351b95136c284f98b}. These identify the exact exported files, including the row-identifier column and CSV formatting. They are provenance fingerprints, not cryptographic evidence of the historical data's truth. The original archive's output manifest was checked before analysis. A separate package manifest identifies the deliverables in this report bundle.
+
+The following mapping allows a reviewer to trace the main claims without reading the entire program.
+\begin{longtblr}[caption={Evidence-to-file map.}]{width=\linewidth,colspec={X X[1.8]},rowhead=1,row{1}={font=\bfseries,bg=lightblue},hlines}
+Claim or diagnostic & File in the source bundle \\
+Exact data and item mapping & \code{data/ecpe_responses.csv}; \code{data/ecpe_qmatrix.csv} \\
+Full-sample formula outputs & \code{data/item_weights_full.csv} \\
+Raw-score agreement and reversals & \code{data/full_weighted_vs_raw.csv}; \code{data/raw_score_reversals.csv} \\
+Person scores and fold membership & \code{data/person_scores.csv} \\
+Calibration intervals and audit variation & \code{data/bootstrap_item_intervals.csv}; \code{data/bootstrap_audit_metrics.csv} \\
+Sample-size and selected-population sensitivity & \code{data/sample_size_summary.csv}; \code{data/population_shift_summary.csv} \\
+Calibration corruption & \code{data/contamination_summary.csv} \\
+Null tests and internal consistency & \code{data/permutation_item_tests.csv}; \code{data/split_half_consistency.csv} \\
+Synthetic item cases & \code{data/augmented_item_stress.csv}; \code{data/augmented_item_weights.csv} \\
+Deletion and row replication & \code{data/item_deletion.csv}; \code{data/sample_replication.csv} \\
+Repeated independent-item simulation & \code{supplementary/null_item_replicates.csv} \\
+Regression comparison & \code{supplementary/regression_comparison.csv} \\
+Split IDs, RNG and bootstrap arrays & \code{data/run_state.rds} \\
+Validation and original environment & \code{data/self_tests.txt}; \code{data/sessionInfo.txt} \\
+Source-equivalence numerical record & \code{verification/reference_equivalence_checks.csv} \\
+\end{longtblr}
+
+\section{Literature-search roles and access limits}
+Official Michigan Language Assessment pages were used for the present exam's scope and format. The package website, documentation and actual exported objects were used for the research dataset. Original or publisher-hosted methodological records and author-maintained documentation were preferred over general explanatory sites. Source references support the specific claims attributed to them; the report's empirical tables and mathematical deductions come from the project and supplied code.
+
+\begin{longtblr}[caption={Research source audit.}]{width=\linewidth,colspec={X[1.1] X[1.9]},rowhead=1,row{1}={font=\bfseries,bg=lightblue},hlines}
+Source group & Use and limit \\
+Michigan Language Assessment & Current scope and format; no conversion of the proposed score to official certification outcomes. \\
+\code{edmdata} documentation and data & Dataset dimensions, coding and Q attributes; actual matrix used to verify completeness and item alignment. \\
+Templin and coauthors & Established ECPE diagnostic-modeling context; no claim that the current report reproduced their model fits. \\
+\code{measr} ECPE vignette & A primary software example of diagnostic modeling and model checking; its estimates are not imported as new results here. \\
+Somers; SciPy; Hmisc & Historical definition, direction cautions and code conventions; formulas checked explicitly against the project implementation. Original Somers bibliographic details were corroborated through software documentation. \\
+Metsämuuronen (2020) & Direct prior use of Somers' $D$ for item-test/rest analysis; not evidence for the present log-product weights. \\
+\code{scikit-learn} 0.19 documentation & Exact algebraic match for the smoothed inverse-frequency first factor, predating this project. \\
+Efron; Phipson and Smyth; Benjamini and Hochberg & Resampling and multiplicity methods; assumptions discussed for this design rather than inferred from citation alone. \\
+Revelle and Condon; Chalmers & Reliability interpretation and IRT comparator framework; no new model fitting claimed. \\
+Kita et al. (2026) & Related score-allocation paper located through publisher indexing and author bibliography; full text unavailable, so detailed equivalence and performance claims are withheld. \\
+Earlier PISA report and project review & User/project-supplied historical evidence and critique; not newly replicated or independently authenticated human peer review. \\
+\end{longtblr}
+
+The search was targeted, not exhaustive. No absence-of-prior-art conclusion follows from failing to find the exact formula. Web documentation can change after the research cutoff. The pinned scoring blob and supplied source snapshot provide the stable reference for what was actually evaluated.
+
+\chapter{Implementation listing}\label{app:code}
+\section{Complete ECPE stress-test program}
+The following is the version 1.0.0 program used for the submitted run. The full pinned application source is included separately as \code{code/item_analysis_reference.r}; it is not duplicated here because its interface and parsing code are not necessary to read the mathematical evaluation.
+\lstinputlisting{code/ecpe_scoring_stress_test.R}
+\section{Supplementary report analyses}
+This script adds the explicitly labeled constrained regression and repeated independent-item experiment. Its design was generated for the present report after the original stress results were available.
+\lstinputlisting{code/ecpe_supplementary.R}
+
+\chapter{Full AI-use disclosure}\label{app:ai}
+\begin{caution}{Substantial AI involvement}
+OpenAI ChatGPT substantially produced this report and its supporting analysis code. AI assistance extended beyond spelling or editing: it included research synthesis, mathematical exposition, stress-test design, supplementary computations, figures, interpretation, source-package preparation and XeLaTeX production. This disclosure is part of the report and should remain attached to copies or extracts that describe its authorship or validation status.
+\end{caution}
+
+\section{System and task context}
+The work was performed through an OpenAI ChatGPT assistant in a Codex/Work Mode environment with tools for web research, local file inspection, code execution and document production. The exact underlying model snapshot, sampling settings and internal system configuration were not supplied as a stable public model identifier for this report; none is invented here. No claim is made that a separate proprietary ``Deep Research'' product executed the research. The user asked for a comparably thorough research approach, which was implemented through sequential source review, computation and document checking.
+
+The human requester, Anders Hellström, supplied the project goal and scoring-system context, requested the original ECPE stress-testing program, executed the submitted primary run, provided its archived outputs and terminal transcript, and supplied the earlier report as a model for reporting. The current request specified the subject, extensive mathematical explanation, integration of project material, XeLaTeX/KOMA-Script typography and prominent short and full AI disclosures.
+
+\section{Contribution boundaries}
+The scoring system is described as Hellström's project proposal. That attribution reflects the project record and the request, not an independently adjudicated claim of mathematical priority. Prior development was also AI-assisted: discussion and formalization helped translate design choices into equations and software. The historical rank-cut, intermediate concordance and current positive-Somers versions are distinguished to avoid attributing one version's results to another.
+
+For the original ECPE program, AI generated the stress-test design and R implementation from the current source definition and user instructions. The submitted complete run was executed by the user on the environment recorded in \code{data/sessionInfo.txt}. For this report, AI inspected that run, checked file fingerprints and numerical tables, reviewed the pinned scoring code, performed primary-source web searches, extracted relevant material from project documents, and wrote the narrative and mathematical explanations.
+
+AI additionally designed and executed the constrained quadratic analysis and the repeated simulations of independent items. These were not supplied as prior user-run results and are labeled supplementary throughout. AI generated the Python figure/table builder, the LaTeX source, bibliography and source package. No illustrative empirical numbers were invented to fill gaps: new numerical findings were calculated from supplied data or generated under explicitly described simulation conditions.
+
+\section{Verification performed}
+The primary archive's manifest was checked against its files. The input dimensions, binary coding, missingness and Q-matrix alignment were inspected. The report checked values against the saved outputs rather than relying on the terminal success message alone. The program's self-tests compare concordance calculations to direct pair enumeration and rank identities; the user's run reports a successful Hmisc comparison. The historical local source-equivalence record is retained separately. These are software and arithmetic checks, not psychometric validation.
+
+New calculations were executed in R and Python, with source and environment records supplied. Tables and vector figures were generated from numerical files. The XeLaTeX document was compiled, its references resolved, and its rendered pages inspected for layout problems. Such checking reduces transcription and formatting errors but does not eliminate reasoning errors, source omissions or erroneous interpretations.
+
+\section{Sources, access and uncertainty}
+The assistant used public web sources and the project files available for this task. Primary institutional pages, research publications and software documentation were preferred. Some publisher full texts could not be accessed; the report identifies the material limitation for the 2026 related-work paper rather than presenting its method as fully reviewed. The bibliography is a targeted reading record, not an exhaustive systematic-review corpus.
+
+Earlier PISA findings were taken from the supplied report and associated project material, not rerun as part of this ECPE document. No new ECPE examinees were recruited, no original item text was recovered, and no official exam outcome or personal demographic data was inferred from the anonymous response matrix. Retrieved project history was used for continuity, with the pinned source controlling the present scoring definition.
+
+AI-generated text can contain mistaken algebra, misread sources, unrecognized confounding or unjustified emphasis. Explicit uncertainty statements and reproducible code make those errors easier to find; they do not guarantee their absence. Readers should check the formula, code, empirical claims and intended-use assumptions before relying on the report for further research or consequential decisions.
+
+\section{Human review, authorship and responsibility}
+This document has not undergone an independently verified human expert review, journal peer review, formal psychometric certification or endorsement by Michigan Language Assessment, the \code{edmdata} authors, OpenAI or the cited researchers. A project-supplied document styled as a methodological review was considered as critique; its presence does not establish that the present report has been reviewed by a human expert.
+
+AI is not presented as an accountable human author. The requester has not been presumed to have approved every sentence, verified every result or accepted responsibility merely by commissioning the work. Before public authorship, submission or operational adoption, the responsible human authors or decision makers would need to review the final material, correct any errors, choose the claims they can support and provide whatever disclosures the receiving venue requires.
+
+\section{Prompt and reproducibility record}
+The operative request was to produce a thorough report on ECPE and the user's scoring system, explain the method completely, integrate relevant project material, follow the earlier report's style, use the specified XeLaTeX packages and include conspicuous AI disclosures. This appendix summarizes the substantive role of AI; it is not a verbatim transcript of every conversation turn or hidden instruction, and it does not claim that complete internal model reasoning is archived.
+
+The source bundle preserves the executable analysis scripts, data outputs, mathematical specification, bibliography and build inputs needed to inspect this deliverable. Reproducing the analyses is possible without reproducing the assistant's prose generation. Re-running a generative model with a similar prompt would not be expected to produce identical wording or an identical document.
+\end{document}
