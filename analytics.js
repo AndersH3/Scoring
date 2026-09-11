@@ -13,8 +13,20 @@
 
   const GOATCOUNTER_CODE = "miym6tbsng";
   const SHOW_VISITOR_COUNT = false;
+  const PROJECTS_HUB = "https://projects.hellstrom.pw/";
 
   const endpoint = `https://${GOATCOUNTER_CODE}.goatcounter.com/count`;
+
+  // Keep the project-directory backlink close to the top without coupling it
+  // to the generated repository index markup.
+  const actions = document.querySelector("header .actions");
+  if (actions && !actions.querySelector(`a[href="${PROJECTS_HUB}"]`)) {
+    const projectsLink = document.createElement("a");
+    projectsLink.className = "button";
+    projectsLink.href = PROJECTS_HUB;
+    projectsLink.textContent = "← All projects";
+    actions.prepend(projectsLink);
+  }
 
   // Keep campaign parameters available to GoatCounter while avoiding arbitrary
   // query strings in page names. The canonical URL already identifies the page.
@@ -97,4 +109,3 @@
 
   document.head.appendChild(tracker);
 })();
-
